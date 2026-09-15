@@ -5,3 +5,6 @@
 config.json
 config.bak.json
 config.bad.json
+
+# test scratch
+tests/.tmp/

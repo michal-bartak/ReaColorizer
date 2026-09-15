@@ -279,7 +279,30 @@ Three read-mostly helpers, useful when a colour is not what you expected:
   (the visible index stops matching the real one), and precedence *is* the list
   order, so hiding rows would hide the thing that matters most.
 
+## Repository layout
+
+```
+MB_NameColorizer_*.lua   actions you add to REAPER's Action List
+lib/                     the engine; lib/gui/ is the only part that uses ImGui
+tests/                   runs outside REAPER against a mocked API
+docs/DECISIONS.md        why it is built this way, and what was tried first
+docs/RESEARCH.md         verified external facts: SWS, ReaImGui, REAPER prefs
+```
+
 ## Tests
 
-`MB_NameColorizer_RunTests.lua` runs ~380 assertions and prints a summary to the
-ReaScript console. It touches no project state and never writes your config.
+`MB_NameColorizer_RunTests.lua` runs from REAPER's Action List and prints a
+summary to the ReaScript console. It touches no project state and never writes
+your config.
+
+The full suite runs outside REAPER:
+
+```bash
+brew install lua     # once
+./tests/run.sh
+```
+
+That covers the engine, the action scripts end to end, the background loop, the
+GUI logic and its drawing paths — against a mock REAPER and a stub ImGui — plus
+a differential fuzz of the regex engine against Python's `re`. See
+[tests/README.md](tests/README.md).
