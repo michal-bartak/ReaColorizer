@@ -1,0 +1,7 @@
+# macOS
+.DS_Store
+
+# REAPER writes the rule set outside this folder, but just in case
+config.json
+config.bak.json
+config.bad.json
