@@ -200,6 +200,16 @@ local function clear_popup()
     ImGui.SetTooltip(ctx, 'Resets only objects a rule currently claims.')
   end
 
+  if ImGui.MenuItem(ctx, 'Clear selected objects') then
+    app.clear_colors('selected')
+  end
+  if ImGui.IsItemHovered(ctx) then
+    ImGui.SetTooltip(ctx, 'Resets the selected tracks and items to the theme\n' ..
+                          'default, whether or not a rule matches them.\n' ..
+                          'Regions and markers are left alone -- they have no\n' ..
+                          'selection this can read.')
+  end
+
   if ImGui.MenuItem(ctx, 'Clear EVERY custom colour in the project...') then
     local ans = reaper.ShowMessageBox(
       'Reset every custom colour in this project to the theme default?\n\n' ..

@@ -293,15 +293,37 @@ function M.apply_selection()
           or string.format('Coloured %d of %d selected.', stats.written, stats.scanned))
 end
 
---- scope: 'matched' | 'all'
+--- scope: 'matched' | 'all' | 'selected'
+--- 'selected' narrows the enumeration instead of the plan: markers and regions
+--- have no usable selection state, and unselected tracks still come back as
+--- context, which plan_clear skips.
 function M.clear_colors(scope)
   M.flush(true)
-  local entries = targets.all(0, {})
+  local sel = (scope == 'selected')
+  local entries = targets.all(0, sel and { selected_only = true, want_markers = false }
+                                     or {})
   local ops = apply.plan_clear(entries, st.cfg.rules, scope, st.cfg.options)
-  if #ops == 0 then M.toast('Nothing to clear.'); return end
-  local written = apply.commit(ops, 'Clear colours')
+
+  if #ops == 0 then
+    if sel then
+      -- "nothing selected" and "the selection has no colours to clear" are
+      -- different answers and the first one is actionable.
+      local n = 0
+      for _, e in ipairs(entries) do if not e.context then n = n + 1 end end
+      M.toast(n == 0 and 'Nothing is selected.'
+              or 'Nothing to clear in the selection.')
+    else
+      M.toast('Nothing to clear.')
+    end
+    return
+  end
+
+  local written = apply.commit(ops, sel and 'Clear colours on selection'
+                                        or 'Clear colours')
   M.refresh_entries(true)
-  M.toast(string.format('Cleared %d object%s.', written, written == 1 and '' or 's'))
+  M.toast(string.format('Cleared %d object%s%s.', written,
+                        written == 1 and '' or 's',
+                        sel and ' in the selection' or ''))
 end
 
 -------------------------------------------------------------------- tester

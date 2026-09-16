@@ -179,6 +179,47 @@ do
   check(left == 0, 'clear_colors("all") resets every track', left .. ' left')
 end
 
+do -- clearing the selection touches the selection and nothing else
+  app.st.cfg = config.starter()
+  for _, t in ipairs(P.tracks) do t.sel = false end
+  app.apply_all()
+
+  local coloured = {}
+  for _, t in ipairs(P.tracks) do coloured[#coloured + 1] = t.color end
+  local pick
+  for i, t in ipairs(P.tracks) do if t.color ~= 0 and t.name then pick = i break end end
+  check(pick ~= nil, 'a coloured track to select')
+
+  if pick then
+    P.tracks[pick].sel = true
+    app.clear_colors('selected')
+
+    check(P.tracks[pick].color == 0, 'the selected track is cleared')
+    local others_kept = true
+    for i, t in ipairs(P.tracks) do
+      if i ~= pick and t.color ~= coloured[i] then others_kept = false end
+    end
+    check(others_kept, 'and every unselected track keeps its colour')
+    -- Unselected tracks come back from targets.all as context. If plan_clear
+    -- ever stopped skipping context entries this is what would catch it.
+    check(app.current_toast():find('selection') ~= nil,
+          'the status line says the selection was what changed',
+          tostring(app.current_toast()))
+
+    P.tracks[pick].sel = false
+  end
+end
+
+do -- and says so plainly when there is no selection at all
+  app.st.cfg = config.starter()
+  for _, t in ipairs(P.tracks) do t.sel = false end
+  for _, i in ipairs(P.items) do i.sel = false end
+  app.clear_colors('selected')
+  check(app.current_toast() == 'Nothing is selected.',
+        'an empty selection is reported as empty, not as "nothing to clear"',
+        tostring(app.current_toast()))
+end
+
 print('\n=== gui logic (mock REAPER) ===')
 for _, f in ipairs(fails) do print('  FAIL  ' .. f) end
 print(string.format('%d passed, %d failed\n', pass, fail))
