@@ -147,6 +147,16 @@ tracks only: nothing else has folder structure, and for items the ordering
 inside a folder (track order, then item order) is not something anyone can
 predict from the arrange view.
 
+**A REAPER visual spacer ends a run.** Spacers are not objects, so they never
+reach the entry list. They are a track attribute —
+`I_SPACER : int * : 1=TCP track spacer above this track` — so the flag lives on
+the track *below* the gap, at the cost of one extra `GetMediaTrackInfo_Value`
+per track. Honoured automatically rather than given its own scope value:
+inserting a spacer states the grouping in REAPER's own UI, which is a plainer
+signal than an incidental gap in what a rule happens to match. `folder` scope
+ignores it — that scope is structural and a spacer is visual. On a REAPER
+without spacers the parameter reads 0, so no version guard is needed.
+
 **Defaults differ by kind**, deliberately. Tracks and items default to `run`;
 regions and markers default to `all`. A song's regions are interleaved —
 `Verse, Chorus, Verse, Chorus` — so a rule matching one of them rarely wins two

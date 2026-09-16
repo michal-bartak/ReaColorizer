@@ -106,11 +106,17 @@ colour:
 | spread across | meaning |
 |---|---|
 | all matches | one ramp across every match in the project |
-| **runs** (default) | a run is an unbroken stretch this rule wins; anything it does not win ends one |
+| **runs** (default) | a run is an unbroken stretch this rule wins; anything it does not win ends one, and so does a **visual spacer** |
 | folders | one ramp inside each folder |
 | runs & folders | a new ramp at a gap or a folder edge, whichever comes first |
 
-So with `String*` matching either of these, each block gets its own full ramp:
+REAPER 7's **visual spacers** count as a break, so a gradient can be split
+without inventing a separator track — *Track: Insert visual spacer before
+tracks*, and the ramp restarts there. Usually the tidiest way to say "these
+belong together and those don't", since the line is already drawn in the track
+panel.
+
+So with `String*` matching any of these, each block gets its own full ramp:
 
 ```
 String1, String2, String3      <- "runs": the Bus below ends this one
@@ -119,6 +125,10 @@ String11, String12, String13
 
 String1(parent), String2, String3       <- "folders"
 String11(parent), String12, String13
+
+String1, String2, String3
+─────────────────────────      <- a visual spacer; also "runs"
+String11, String12, String13
 ```
 
 Items group per track as well as per gap, since ramping across a track boundary
