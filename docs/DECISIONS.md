@@ -143,9 +143,17 @@ matches under. Three things it must get right:
 
 Items additionally break on a change of track — they are enumerated per track,
 so without it a run would ramp straight across a track boundary. Folder scope is
-tracks only: the ordering inside a folder (track order, then item order) is not
-something anyone can predict from the arrange view. Regions and markers are not
-grouped at all.
+tracks only: nothing else has folder structure, and for items the ordering
+inside a folder (track order, then item order) is not something anyone can
+predict from the arrange view.
+
+**Defaults differ by kind**, deliberately. Tracks and items default to `run`;
+regions and markers default to `all`. A song's regions are interleaved —
+`Verse, Chorus, Verse, Chorus` — so a rule matching one of them rarely wins two
+in a row, and defaulting them to runs would leave every group with a single
+member and the gradient invisible. Contiguous blocks are the norm for tracks and
+the exception for regions, so the default follows the reality rather than
+consistency for its own sake.
 
 The folder container map mirrors the propagation stack in pass 3 exactly,
 multi-level close included, so the two can never disagree about where a folder

@@ -122,7 +122,15 @@ String11(parent), String12, String13
 ```
 
 Items group per track as well as per gap, since ramping across a track boundary
-is meaningless. Regions and markers are never grouped.
+is meaningless. Folders are offered for track rules only — nothing else has
+folder structure.
+
+Regions and markers can be grouped into runs too, but they **default to
+`all matches`** rather than `runs`. A song's regions are normally interleaved —
+`Verse, Chorus, Verse, Chorus` — so a rule matching one of them rarely wins two
+in a row, and grouping would leave every group with a single member and no
+visible gradient. Switch them to `runs` when your regions really do come in
+blocks.
 
 Two things to know about gradients:
 

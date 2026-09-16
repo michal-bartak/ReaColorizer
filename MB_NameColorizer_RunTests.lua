@@ -975,10 +975,20 @@ end
 do -- one kind's entries never split another kind's run
   local rs = ruleset{ region = { grad_rule{ mode = 'substring', pattern = 'Ch',
                                             gradient_scope = 'run' } } }
-  -- regions are region-scope-coerced to 'all', so this also pins that coercion
   local m = planmap({ region('Ch1'), marker('X'), region('Ch2') }, rs, {})
   check(m['Ch1'] == RED and m['Ch2'] == BLU,
-        'a marker between two regions does not split them')
+        'a marker between two regions does not split their run')
+
+  -- but a region the rule does not win does
+  local m2 = planmap({ region('Ch1'), region('Verse'), region('Ch2') }, rs, {})
+  check(m2['Ch1'] == RED and m2['Ch2'] == RED,
+        'an unmatched region between them splits it into two groups of one')
+
+  -- which is exactly why regions default to one ramp across everything
+  local dflt = ruleset{ region = { grad_rule{ mode = 'substring', pattern = 'Ch' } } }
+  local m3 = planmap({ region('Ch1'), region('Verse'), region('Ch2') }, dflt, {})
+  check(m3['Ch1'] == RED and m3['Ch2'] == BLU,
+        'by default an interleaved region rule still ramps across all its matches')
 end
 
 do -- folders
@@ -1096,10 +1106,16 @@ do -- scope is coerced to what each kind can actually use
         'items fall back to run -- folder ordering means nothing for them')
   check(RU.new('item', { gradient_scope = 'both' }).gradient_scope == 'run',
         'and so does "both"')
-  check(RU.new('region', { gradient_scope = 'run' }).gradient_scope == 'all',
-        'regions are not grouped')
-  check(RU.new('marker', { gradient_scope = 'folder' }).gradient_scope == 'all',
-        'nor are markers')
+  check(RU.new('region', { gradient_scope = 'run' }).gradient_scope == 'run',
+        'regions can be grouped into runs')
+  check(RU.new('marker', { gradient_scope = 'run' }).gradient_scope == 'run',
+        'and so can markers')
+  check(RU.new('region', { gradient_scope = 'folder' }).gradient_scope == 'all',
+        'but not by folder -- they have no folder structure')
+  check(RU.new('region', {}).gradient_scope == 'all',
+        'and they default to one ramp: a song\'s regions are interleaved, so ' ..
+        'runs would leave every group with one member')
+  check(RU.new('marker', {}).gradient_scope == 'all', 'markers likewise')
   check(RU.new('track', { gradient_scope = 'banana' }).gradient_scope == 'run',
         'an unknown value falls back to the default')
   check(RU.new('track', {}).gradient_scope == 'run', 'and so does a missing one')

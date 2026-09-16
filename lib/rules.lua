@@ -69,13 +69,21 @@ for _, k in ipairs(M.KINDS) do KIND_SET[k] = true end
 local GRADIENT_SET = {}
 for _, g in ipairs(M.GRADIENT_SCOPES) do GRADIENT_SET[g] = true end
 
---- Can this kind use this grouping? Grouping is tracks and items only, and
---- folder structure only means something for tracks.
+--- Can this kind use this grouping? Folder structure only means something for
+--- tracks; everything else can at least be grouped into runs.
 function M.gradient_scope_applies(scope, kind)
-  if scope == 'all' then return true end
-  if kind == 'region' or kind == 'marker' then return false end
-  if kind == 'item' then return scope == 'run' end
-  return true
+  if scope == 'all' or scope == 'run' then return true end
+  return kind == 'track'          -- 'folder' and 'both' need folder structure
+end
+
+--- Regions and markers default to one ramp across everything, unlike tracks and
+--- items. A song's regions are normally interleaved -- Verse, Chorus, Verse,
+--- Chorus -- so a rule matching one of them rarely wins two in a row, and
+--- grouping into runs would leave every group with a single member and no
+--- visible gradient at all. Grouping is still available there, just not assumed.
+function M.default_gradient_scope(kind)
+  if kind == 'region' or kind == 'marker' then return 'all' end
+  return 'run'
 end
 
 M.MODE_LABEL = {
@@ -156,11 +164,12 @@ function M.normalize(r, kind)
 
   -- Gradient grouping. Stored whatever the rule's colours are, so turning a
   -- gradient off and on again does not lose the choice.
-  if not GRADIENT_SET[r.gradient_scope] then r.gradient_scope = 'run' end
+  local default_scope = M.default_gradient_scope(kind)
+  if not GRADIENT_SET[r.gradient_scope] then r.gradient_scope = default_scope end
   if not M.gradient_scope_applies(r.gradient_scope, kind) then
     -- Coerce rather than reject, the same as an inapplicable `only` filter:
     -- a hand-edited config should load with sane values, not break.
-    r.gradient_scope = (kind == 'item') and 'run' or 'all'
+    r.gradient_scope = default_scope
   end
 
   -- Only track rules can push their colour onto the items sitting on them.
