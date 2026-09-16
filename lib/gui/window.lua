@@ -320,6 +320,33 @@ local function action_bar(FS)
   if ImGui.Button(ctx, 'Options', wopts) then ImGui.OpenPopup(ctx, OPTIONS_POPUP) end
 end
 
+------------------------------------------------------------- tab strip probe
+-- TEMPORARY. Set to false (or delete this block and its three call sites) once
+-- the tab spacing question is settled.
+TAB_PROBE = true
+local probe, probe_done, frames = nil, false, 0
+
+local function report_tabs()
+  -- ImGui's tab bar needs a frame or two to settle, so the first frames'
+  -- numbers are not the ones on screen. Report once, later.
+  frames = frames + 1
+  if probe_done or not probe or #probe < 2 or frames < 30 then return end
+  probe_done = true
+
+  local out = { '', '--- Name Colorizer tab strip ---------------------------' }
+  for i, t in ipairs(probe) do
+    out[#out + 1] = string.format('%-10s x0=%7.2f  x1=%7.2f  w=%6.2f%s',
+                                  t.label, t.x0, t.x1, t.x1 - t.x0,
+                                  t.open and '   <- open' or '')
+    if i > 1 then
+      out[#out] = out[#out] .. string.format('   gap before = %.2f',
+                                             t.x0 - probe[i - 1].x1)
+    end
+  end
+  out[#out + 1] = string.format('font size = %.2f', ImGui.GetFontSize(ctx))
+  reaper.ShowConsoleMsg(table.concat(out, '\n') .. '\n')
+end
+
 ------------------------------------------------------------------- the body
 function M.draw(FS)
   local st = app.st
@@ -344,13 +371,24 @@ function M.draw(FS)
 
   -- One ordered list per object kind. Precedence is per-kind, so reordering
   -- your track rules cannot change which region wins.
+  probe = TAB_PROBE and {} or nil
   theme.push_tab_padding(FS)
   if ImGui.BeginTabBar(ctx, 'kinds') then
     for _, kind in ipairs(rulesmod.KINDS) do
       local on, total = app.count(kind)
       local label = string.format('%s%s###%s', rulesmod.KIND_LABEL[kind],
                                   total > 0 and (' (' .. total .. ')') or '', kind)
-      if ImGui.BeginTabItem(ctx, label) then
+      local opened = ImGui.BeginTabItem(ctx, label)
+      -- TEMPORARY: the tab strip's gaps look uneven. Measure instead of
+      -- guessing -- the last item after BeginTabItem is the tab button itself,
+      -- whether or not it is the open one.
+      if TAB_PROBE then
+        local x0 = ImGui.GetItemRectMin(ctx)
+        local x1 = select(1, ImGui.GetItemRectMax(ctx))
+        probe[#probe + 1] = { kind = kind, label = label:match('^[^#]*'),
+                              x0 = x0, x1 = x1, open = opened }
+      end
+      if opened then
         theme.pop_tab_padding()          -- contents use ordinary padding
         st.active_kind = kind
 
@@ -369,6 +407,7 @@ function M.draw(FS)
     ImGui.EndTabBar(ctx)
   end
   theme.pop_tab_padding()
+  if TAB_PROBE then report_tabs() end
 
   ImGui.Spacing(ctx)
   action_bar(FS)
