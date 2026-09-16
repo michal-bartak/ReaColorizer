@@ -347,10 +347,15 @@ function M.draw(FS)
   -- The table draws an outer border, so its header FILL starts one pixel in.
   -- Without this the first tab overhangs the table by that pixel.
   ImGui.Indent(ctx, theme.TAB_INSET)
-  theme.push_tab_padding(FS)
   -- Suppress ImGui's own tab-bar separator; theme.tab_shelf draws one that is
   -- exactly as wide as the table instead of overhanging it.
+  --
+  -- This goes on the stack BEFORE the tab padding, not after. PushStyleVar is
+  -- LIFO, and the tab's contents pop the padding back off to draw the table --
+  -- with this on top, that pop took the border size instead and the table drew
+  -- at tab padding, making every control in it bigger.
   ImGui.PushStyleVar(ctx, ImGui.StyleVar_TabBarBorderSize, 0)
+  theme.push_tab_padding(FS)
   if ImGui.BeginTabBar(ctx, 'kinds') then
     for _, kind in ipairs(rulesmod.KINDS) do
       local on, total = app.count(kind)
@@ -393,8 +398,8 @@ function M.draw(FS)
     end
     ImGui.EndTabBar(ctx)
   end
-  ImGui.PopStyleVar(ctx)               -- TabBarBorderSize
   theme.pop_tab_padding()
+  ImGui.PopStyleVar(ctx)               -- TabBarBorderSize, pushed first
   ImGui.Unindent(ctx, theme.TAB_INSET)
 
   ImGui.Spacing(ctx)

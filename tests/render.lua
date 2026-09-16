@@ -732,6 +732,47 @@ do
         'depth ' .. tostring(max_depth_at_table))
 end
 
+------------------------- the rule table draws at ORDINARY frame padding
+do
+  -- PushStyleVar is LIFO, and the tab strip pushes two vars. The tab's
+  -- contents pop the padding back off before drawing the table -- so anything
+  -- pushed AFTER the padding is what that pop actually removes, leaving the
+  -- table at tab padding and every control in it visibly bigger. Track the
+  -- live FramePadding and check it when the rule table starts.
+  local stack, at_table = {}, nil
+  local ImGui
+  ImGui = mockimgui.new{ scripted = {
+    PushStyleVar = function(_, idx, a, b)
+      stack[#stack + 1] = (idx == ImGui.StyleVar_FramePadding)
+                          and { a, b } or 'other'
+    end,
+    PopStyleVar = function() stack[#stack] = nil end,
+    BeginTable = function(_, name)
+      if name:find('^rules_') and at_table == nil then
+        for i = #stack, 1, -1 do
+          if stack[i] ~= 'other' then at_table = stack[i]; break end
+        end
+        at_table = at_table or false
+      end
+      return true
+    end,
+  } }
+  window.init(ImGui, { 'ctx' }); theme.init(ImGui, { 'ctx' })
+  P.advance(1); app.recompute_preview()
+  assert(pcall(window.draw, 14))
+
+  -- theme.push (the outer one) is not applied in this test, so the innermost
+  -- FramePadding still live at the table must NOT be the tab's.
+  local tabpad = { math.floor(14 * theme.TAB_PAD_X + 0.5),
+                   math.floor(14 * theme.TAB_PAD_Y + 0.5) }
+  check(at_table ~= nil, 'the rule table is reached')
+  local is_tabpad = at_table and at_table ~= false
+                    and at_table[1] == tabpad[1] and at_table[2] == tabpad[2]
+  check(not is_tabpad, 'the table does not inherit the tab strip padding',
+        at_table == false and 'none live'
+        or string.format('%s, %s', tostring(at_table[1]), tostring(at_table[2])))
+end
+
 --------------------------- the gap closes to the PAINTED tab edge, not the bar
 do
   -- Measured in REAPER: a tab's item rect was 31 tall while the tab is painted
