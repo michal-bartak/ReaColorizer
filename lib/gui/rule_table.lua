@@ -202,7 +202,9 @@ function M.draw(kind, FS, height)
   -- header row.
   local centred_headers = { [idx.ci] = true, [idx.hits] = true }
   if is_track then centred_headers[idx.cascade] = true end
+  theme.probe_point('table top (before header row)')
   theme.headers_row(#cols, centred_headers)
+  theme.probe_point('header cell, last column', 'item')
 
   for i, r in ipairs(rules) do
     ImGui.PushID(ctx, r.id)

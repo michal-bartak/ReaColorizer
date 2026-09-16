@@ -320,6 +320,40 @@ local function action_bar(FS)
   if ImGui.Button(ctx, 'Options', wopts) then ImGui.OpenPopup(ctx, OPTIONS_POPUP) end
 end
 
+------------------------------------------------------------ TEMPORARY probe
+local probe_frames, probe_done = 0, false
+
+local function probe_begin()
+  probe_frames = probe_frames + 1
+  if probe_done or probe_frames < 30 then return false end
+  theme.PROBE = {}
+  return true
+end
+
+local function probe_report()
+  local P = theme.PROBE
+  theme.PROBE = nil
+  if not P or #P == 0 then return end
+  probe_done = true
+
+  local _, isy = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+  local cpx, cpy = ImGui.GetStyleVar(ctx, ImGui.StyleVar_CellPadding)
+  local wpx = ImGui.GetStyleVar(ctx, ImGui.StyleVar_WindowPadding)
+
+  local out = { '', '--- Name Colorizer tab/table join ----------------------' }
+  for _, e in ipairs(P) do
+    if e.x0 then
+      out[#out + 1] = string.format('%-34s rect x %8.2f .. %8.2f   y %8.2f .. %8.2f',
+                                    e.label, e.x0, e.x1, e.y0, e.y1)
+    else
+      out[#out + 1] = string.format('%-34s cursor x %8.2f  y %8.2f', e.label, e.cx, e.cy)
+    end
+  end
+  out[#out + 1] = string.format('ItemSpacing.y = %.2f  CellPadding = %.2f,%.2f  WindowPadding.x = %.2f',
+                                isy, cpx, cpy, wpx)
+  reaper.ShowConsoleMsg(table.concat(out, '\n') .. '\n')
+end
+
 ------------------------------------------------------------------- the body
 function M.draw(FS)
   local st = app.st
@@ -344,6 +378,7 @@ function M.draw(FS)
 
   -- One ordered list per object kind. Precedence is per-kind, so reordering
   -- your track rules cannot change which region wins.
+  local probing = probe_begin()
   theme.push_tab_padding(FS)
   -- Suppress ImGui's own tab-bar separator; theme.tab_shelf draws one that is
   -- exactly as wide as the table instead of overhanging it.
@@ -353,14 +388,19 @@ function M.draw(FS)
       local on, total = app.count(kind)
       local label = string.format('%s%s###%s', rulesmod.KIND_LABEL[kind],
                                   total > 0 and (' (' .. total .. ')') or '', kind)
-      if ImGui.BeginTabItem(ctx, label) then
+      local opened = ImGui.BeginTabItem(ctx, label)
+      theme.probe_point('tab: ' .. label:match('^[^#]*'), 'item')
+      if opened then
         theme.pop_tab_padding()          -- contents use ordinary padding
         st.active_kind = kind
+
+        theme.probe_point('tab content start (before pull-up)')
 
         -- The table joins the open tab: no gap, and a shelf line the same
         -- width as the table. The header row below picks up the tab's colour
         -- (theme.headers_row), so the two read as one surface.
         theme.close_tab_gap()
+        theme.probe_point('after close_tab_gap (shelf drawn here)')
         theme.tab_shelf()
 
         ruletbl.draw(kind, FS, math.max(tableh, FS * 6))
@@ -383,6 +423,7 @@ function M.draw(FS)
   end
   ImGui.PopStyleVar(ctx)               -- TabBarBorderSize
   theme.pop_tab_padding()
+  if probing then probe_report() end
 
   ImGui.Spacing(ctx)
   action_bar(FS)
