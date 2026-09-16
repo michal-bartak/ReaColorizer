@@ -100,12 +100,43 @@ Each rule has a colour, and optionally a **second** colour. With a second
 colour, the objects that rule wins are spread evenly along a gradient in HSL, in
 project order, separately per kind.
 
+**Where a gradient starts over** is set per rule, in the box beside the second
+colour:
+
+| setting | a new gradient begins… |
+|---|---|
+| whole rule | never — one ramp across every match in the project |
+| **after a gap** (default) | at the first object this rule does not win |
+| at each folder | inside each folder |
+| gap or folder | at whichever comes first |
+
+So with `String*` matching either of these, each block gets its own full ramp:
+
+```
+String1, String2, String3      <- "after a gap": the Bus below ends this group
+Bus
+String11, String12, String13
+
+String1(parent), String2, String3       <- "at each folder"
+String11(parent), String12, String13
+```
+
+Items group per track as well as per gap, since ramping across a track boundary
+is meaningless. Regions and markers are never grouped.
+
 Two things to know about gradients:
 
-* They are **position dependent** — inserting a track in the middle of a matched
-  group reshuffles that group's colours.
+* They are **position dependent** — inserting an object into a group reshuffles
+  that group. Grouping shrinks the blast radius (one group rather than every
+  match) but each member then moves further, because groups are smaller. Edits
+  at a boundary change membership: renaming the separating `Bus` to `String Bus`
+  merges two groups and recolours both.
 * They cannot be computed incrementally, so a gradient rule aimed at *items* is
-  expensive on very large projects. Prefer gradients on tracks and regions.
+  expensive on very large projects.
+* Two combinations quietly flatten a gradient to one colour, and the rule warns
+  about both: grouping by folder with an *is a folder track* filter (every group
+  has one member), and grouping by folder while folder colours are set to
+  *force* (each parent overwrites its children).
 
 ### Folder colours
 

@@ -672,6 +672,56 @@ do -- the renamed panel headings
         'and SeparatorText is gone entirely -- it cannot do small caps')
 end
 
+------------------------------------------- the gradient scope combo
+do
+  -- it exists only where a gradient does
+  local function labels_with(color2, kind)
+    app.st.cfg.rules = config.empty_rules()
+    app.st.cfg.rules[kind][1] = rules.new(kind, { label = 'G', pattern = 'a',
+                                                  color = 0x112233, color2 = color2 })
+    app.st.active_kind = kind
+    -- Combos are closed by default in the stub, so their items are never
+    -- drawn. Open them: the point of this test is which options a kind offers.
+    local ImGui, rec = mockimgui.new{ only_tab = rules.KIND_LABEL[kind],
+                                      scripted = { BeginCombo = function() return true end } }
+    window.init(ImGui, { 'ctx' }); theme.init(ImGui, { 'ctx' })
+    P.advance(1); app.refresh_entries(true); app.recompute_preview()
+    theme.push(14); assert(pcall(window.draw, 14)); theme.pop()
+    return rec.labels
+  end
+
+  check(labels_with(0x445566, 'track')['##gscope'],
+        'a gradient rule offers the grouping combo')
+  check(not labels_with(nil, 'track')['##gscope'],
+        'a flat rule does not')
+
+  -- folder grouping is meaningless for items, so it must not be offered
+  local tr_l = labels_with(0x445566, 'track')
+  check(tr_l[rules.GRADIENT_LABEL.folder], 'tracks can group by folder')
+  local it_l = labels_with(0x445566, 'item')
+  check(it_l[rules.GRADIENT_LABEL.run], 'items can group by run')
+  check(not it_l[rules.GRADIENT_LABEL.folder], 'but not by folder')
+end
+
+do -- preview and Apply must agree for a GROUPED gradient too, not just a flat
+   -- one -- this pair has drifted twice before
+  for _, t in ipairs(P.tracks) do t.color = 0 end
+  app.st.cfg.options.propagate_folders = 'off'
+  app.st.cfg.rules = config.empty_rules()
+  app.st.cfg.rules.track[1] = rules.new('track', { label = 'Spread', mode = 'regex',
+                                                   pattern = '.', color = 0xFF0000,
+                                                   color2 = 0x0000FF,
+                                                   gradient_scope = 'run' })
+  local pv = preview_by_name('track')
+  local ap = applied_by_name()
+  local mismatch
+  for name, p in pairs(pv) do
+    if p.kind == 'track' and ap[name] ~= p.color then mismatch = name end
+  end
+  check(mismatch == nil, 'every previewed grouped-gradient colour is what Apply writes',
+        tostring(mismatch))
+end
+
 print('\n=== gui render (stub ImGui) ===')
 for _, f in ipairs(fails) do print('  FAIL  ' .. f) end
 print(string.format('%d passed, %d failed\n', pass, fail))

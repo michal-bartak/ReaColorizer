@@ -153,7 +153,8 @@ end
 -- live rule fails and, before this existed, silently lost every save made
 -- after the first preview. Only ever write a cleaned copy.
 local RULE_FIELDS = { 'id', 'label', 'enabled', 'mode', 'pattern', 'only',
-                      'ci', 'invert', 'color', 'color2', 'note', 'cascade_items' }
+                      'ci', 'invert', 'color', 'color2', 'note', 'cascade_items',
+                      'gradient_scope' }
 
 function M.serializable(cfg)
   local out = { version = cfg.version, options = {}, rules = {} }

@@ -73,7 +73,34 @@ local function only_combo(r, kind)
   return changed
 end
 
-local function color_cell(r)
+--- Where a gradient restarts. Only shown once a second colour exists -- the
+--- setting means nothing without one.
+local function gradient_scope_combo(r, kind, FS)
+  local changed = false
+  ImGui.SetNextItemWidth(ctx, FS * 5.2)
+  if ImGui.BeginCombo(ctx, '##gscope', rulesmod.GRADIENT_SHORT[r.gradient_scope]) then
+    for _, g in ipairs(rulesmod.GRADIENT_SCOPES) do
+      if rulesmod.gradient_scope_applies(g, kind) then
+        if ImGui.Selectable(ctx, rulesmod.GRADIENT_LABEL[g], g == r.gradient_scope)
+           and g ~= r.gradient_scope then
+          app.snapshot(); r.gradient_scope = g; changed = true
+        end
+        if ImGui.IsItemHovered(ctx) then
+          ImGui.SetTooltip(ctx, rulesmod.GRADIENT_HELP[g])
+        end
+      end
+    end
+    ImGui.EndCombo(ctx)
+  end
+  if ImGui.IsItemHovered(ctx) then
+    ImGui.SetTooltip(ctx, 'Where the gradient starts over:\n' ..
+                          rulesmod.GRADIENT_LABEL[r.gradient_scope] .. ' -- ' ..
+                          rulesmod.GRADIENT_HELP[r.gradient_scope])
+  end
+  return changed
+end
+
+local function color_cell(r, kind, FS)
   local changed = false
 
   local rv, c = theme.color_swatch('##col1', r.color)
@@ -86,13 +113,17 @@ local function color_cell(r)
     if rv2 then app.snapshot(); r.color2 = c2; changed = true end
     if ImGui.IsItemHovered(ctx) then
       ImGui.SetTooltip(ctx, 'Second colour: this rule\'s matches are spread\n' ..
-                            'along a gradient between the two, in project order.')
+                            'along a gradient between the two, in project order.\n' ..
+                            'The box beside it says where the gradient starts over.')
     end
     theme.same_line_tight()
     if theme.icon_button('x##nograd') then
       app.snapshot(); r.color2 = nil; changed = true
     end
     if ImGui.IsItemHovered(ctx) then ImGui.SetTooltip(ctx, 'Remove the gradient') end
+
+    theme.same_line_tight()
+    if gradient_scope_combo(r, kind, FS) then changed = true end
   else
     if theme.icon_button('+##grad') then
       app.snapshot(); r.color2 = r.color; changed = true
@@ -144,7 +175,7 @@ function M.draw(kind, FS, height)
   ImGui.TableSetupColumn(ctx, 'Pattern', STRETCH, 2.0)
   ImGui.TableSetupColumn(ctx, 'Aa',     FIX, FS * 2.2)
   if has_only then ImGui.TableSetupColumn(ctx, 'Filter', FIX, FS * 9 + 4) end
-  ImGui.TableSetupColumn(ctx, 'Colour', FIX, FS * 6.5)
+  ImGui.TableSetupColumn(ctx, 'Colour', FIX, FS * 12.5)
   if is_track then ImGui.TableSetupColumn(ctx, 'Items', FIX, FS * 3.2) end
   ImGui.TableSetupColumn(ctx, 'Hits',   FIX, FS * 4)
   ImGui.TableSetupColumn(ctx, '##menu', FIX, FS * 2.6)
@@ -237,7 +268,7 @@ function M.draw(kind, FS, height)
 
     -------------------------------------------------------------- colour
     ImGui.TableSetColumnIndex(ctx, idx.color)
-    if color_cell(r) then changed = true end
+    if color_cell(r, kind, FS) then changed = true end
 
     ------------------------------------------------- cascade onto items
     if is_track then

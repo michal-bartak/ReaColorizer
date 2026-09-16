@@ -144,7 +144,9 @@ function M.draw_list(FS, w, h)
         ImGui.TextColored(ctx, rgba(COL_DIM), lbl)
         if ImGui.IsItemHovered(ctx) and p.rule.color2 then
           ImGui.SetTooltip(ctx, 'This rule spreads a gradient across its matches,\n' ..
-                                'so each one gets a different shade.')
+                                'so each one gets a different shade.\n\n' ..
+                                'Starts over: ' ..
+                                (rulesmod.GRADIENT_LABEL[p.rule.gradient_scope] or '?'))
         end
         if ImGui.IsItemClicked(ctx) then st.sel_id = p.rule.id end
       end
@@ -239,7 +241,7 @@ function M.draw_tester(FS, w, h)
   end
 
   -- Advisory warnings about how the rule is built.
-  local warns = rulesmod.warnings(r)
+  local warns = rulesmod.warnings(r, app.st.cfg and app.st.cfg.options)
   if #warns > 0 then
     ImGui.Spacing(ctx)
     theme.section('Heads up')

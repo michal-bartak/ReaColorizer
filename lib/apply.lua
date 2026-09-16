@@ -50,6 +50,39 @@ end
 
 M.resolve = resolve
 
+--- Map each track entry to the innermost folder containing it; 0 = not in one.
+--- A folder PARENT belongs to the folder it opens, together with its children,
+--- which is what "group by folder" means when you look at the track panel.
+---
+--- This mirrors the propagation stack in pass 3 exactly, multi-level close
+--- (folderdepth can be -2) included, so the two can never disagree about where
+--- a folder ends.
+local function folder_groups(entries)
+  local fg, stack, next_id = {}, {}, 0
+  for i = 1, #entries do
+    local e = entries[i]
+    if e.kind == 'track' then
+      local fd = e.folderdepth or 0
+      if fd >= 1 then
+        next_id = next_id + 1
+        fg[i] = next_id
+        for _ = 1, fd do stack[#stack + 1] = next_id end
+      else
+        fg[i] = stack[#stack] or 0
+        if fd < 0 then
+          for _ = 1, -fd do
+            if #stack == 0 then break end
+            stack[#stack] = nil
+          end
+        end
+      end
+    end
+  end
+  return fg
+end
+
+M.folder_groups = folder_groups
+
 local function prepare_all(rules)
   for _, kind in ipairs(KINDS) do
     local list = rules[kind] or {}
@@ -92,26 +125,90 @@ function M.plan(entries, rules, options)
 
   prepare_all(rules)
 
-  -- 1. winner per entry, plus each entry's rank within its rule group
+  -- 1. winner per entry, plus each entry's rank within its gradient group
   --    (a gradient needs the group size before any colour can be chosen)
-  local winner, rank, groupsize, groups = {}, {}, {}, {}
+  --
+  -- A group is a rule's matches that belong together. `gradient_scope` decides
+  -- what separates one group from the next: nothing ('all'), an object the rule
+  -- does not win ('run'), a folder edge ('folder'), or either ('both').
+
+  local needs_folders = false
+  for _, r in ipairs(rules.track or {}) do
+    if r.enabled and r.color2 and
+       (r.gradient_scope == 'folder' or r.gradient_scope == 'both') then
+      needs_folders = true
+      break
+    end
+  end
+  local fg = needs_folders and folder_groups(entries) or nil
+
+  local winner, rank, groupsize, gid = {}, {}, {}, {}
+  local groups = {}   -- rule id -> { [group id] = count }. Nested rather than a
+                      -- concatenated string key: this loop runs over every
+                      -- track on every auto-loop tick, and per-entry string
+                      -- garbage there is not free.
+
+  -- All per KIND: markers and regions are interleaved by targets.markers, so a
+  -- marker must not split a run of regions.
+  local last_rule, last_track, last_fold = {}, {}, {}
+  local run_seq, both_seq = {}, {}
+  local nrun, nboth = 0, 0
   local matched, scanned = 0, 0
 
   for i = 1, #entries do
     local e = entries[i]
+    local k = e.kind
     if not e.context then scanned = scanned + 1 end
-    local r = resolve(e, rules[e.kind] or {})
+    local r = resolve(e, rules[k] or {})
+
+    -- Run bookkeeping happens for EVERY entry, won or not -- an entry this rule
+    -- does not win is precisely what ends a run. Context entries take part in
+    -- full: targets.tracks returns every track under selected_only and flags
+    -- the unselected ones as context, so if grouping skipped them then
+    -- "apply to selection" would give different colours from "apply all" for
+    -- the very same tracks.
+    local fold = (fg and fg[i]) or 0
+    local gap  = (r == nil) or (last_rule[k] ~= r.id)
+              -- items are enumerated per track, so without this a run would
+              -- ramp straight across a track boundary
+              or (k == 'item' and last_track[k] ~= e.track_guid)
+
+    if gap then nrun = nrun + 1; run_seq[k] = nrun end
+    if gap or last_fold[k] ~= fold then nboth = nboth + 1; both_seq[k] = nboth end
+
+    last_rule[k]  = r and r.id or nil
+    last_track[k] = (k == 'item') and e.track_guid or nil
+    last_fold[k]  = fold
+
     if r then
       if not e.context then matched = matched + 1 end
       winner[i] = r
-      local key = r.id
-      local n = (groups[key] or 0) + 1
-      groups[key] = n
+
+      local scope = r.color2 and r.gradient_scope or 'all'
+      local g = 0
+      if     scope == 'run'    then g = run_seq[k]
+      elseif scope == 'folder' then g = fold
+      elseif scope == 'both'   then g = both_seq[k] end
+      gid[i] = g
+
+      local gg = groups[r.id]
+      if not gg then gg = {}; groups[r.id] = gg end
+      local n = (gg[g] or 0) + 1
+      gg[g] = n
       rank[i] = n
     end
   end
+
+  -- where each match sits in its gradient, for the "why is it this colour?" report
+  local grad = {}
   for i = 1, #entries do
-    if winner[i] then groupsize[i] = groups[winner[i].id] end
+    local r = winner[i]
+    if r then
+      groupsize[i] = groups[r.id][gid[i]]
+      if r.color2 then
+        grad[i] = { rank = rank[i], size = groupsize[i], group = gid[i] }
+      end
+    end
   end
 
   -- 2. colours
@@ -227,11 +324,11 @@ function M.plan(entries, rules, options)
     writes = #ops, cleared = cleared,
   }
 
-  -- `desired`, `winner` and `from_track` are parallel to `entries`. The auto
+  -- `desired`, `winner`, `from_track` and `grad` are parallel to `entries`. The auto
   -- loop needs `desired` to tell "the user recoloured this" from "we set it";
   -- the GUI preview needs all three so it can show what Apply will ACTUALLY do
   -- rather than re-deriving a guess.
-  return ops, stats, desired, winner, from_track
+  return ops, stats, desired, winner, from_track, grad
 end
 
 --- Per-rule match counts under true first-match-wins, plus how many objects

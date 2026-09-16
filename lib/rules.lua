@@ -33,11 +33,48 @@ M.KIND_NOUN = {
 
 M.MODES = { 'substring', 'glob', 'regex' }
 
+-- How far a gradient spreads before it starts over.
+M.GRADIENT_SCOPES = { 'all', 'run', 'folder', 'both' }
+
+M.GRADIENT_LABEL = {
+  all    = 'whole rule',
+  run    = 'after a gap',
+  folder = 'at each folder',
+  both   = 'gap or folder',
+}
+
+-- what the combo shows when closed; the full labels are in the dropdown
+M.GRADIENT_SHORT = {
+  all    = 'all',
+  run    = 'gap',
+  folder = 'folder',
+  both   = 'both',
+}
+
+M.GRADIENT_HELP = {
+  all    = 'One gradient across every match in the project.',
+  run    = 'A new gradient after any object this rule does not win.',
+  folder = 'A new gradient inside each folder.',
+  both   = 'A new gradient at a gap or a folder edge, whichever comes first.',
+}
+
 local MODE_SET = {}
 for _, m in ipairs(M.MODES) do MODE_SET[m] = true end
 
 local KIND_SET = {}
 for _, k in ipairs(M.KINDS) do KIND_SET[k] = true end
+
+local GRADIENT_SET = {}
+for _, g in ipairs(M.GRADIENT_SCOPES) do GRADIENT_SET[g] = true end
+
+--- Can this kind use this grouping? Grouping is tracks and items only, and
+--- folder structure only means something for tracks.
+function M.gradient_scope_applies(scope, kind)
+  if scope == 'all' then return true end
+  if kind == 'region' or kind == 'marker' then return false end
+  if kind == 'item' then return scope == 'run' end
+  return true
+end
 
 M.MODE_LABEL = {
   substring = 'contains',
@@ -115,6 +152,15 @@ function M.normalize(r, kind)
   r.color  = clampcolor(r.color) or 0x808080
   r.color2 = clampcolor(r.color2)
 
+  -- Gradient grouping. Stored whatever the rule's colours are, so turning a
+  -- gradient off and on again does not lose the choice.
+  if not GRADIENT_SET[r.gradient_scope] then r.gradient_scope = 'run' end
+  if not M.gradient_scope_applies(r.gradient_scope, kind) then
+    -- Coerce rather than reject, the same as an inapplicable `only` filter:
+    -- a hand-edited config should load with sane values, not break.
+    r.gradient_scope = (kind == 'item') and 'run' or 'all'
+  end
+
   -- Only track rules can push their colour onto the items sitting on them.
   if kind == 'track' then
     r.cascade_items = (r.cascade_items == true)
@@ -130,8 +176,11 @@ end
 ------------------------------------------------------------------ inspection
 --- Non-fatal warnings to surface in the GUI. Advisory: none of these stops a
 --- rule from being applied.
-function M.warnings(r)
+--- @param options the config options table, optional -- some warnings are about
+---        how a rule interacts with a global setting
+function M.warnings(r, options)
   local w = {}
+  local by_folder = r.gradient_scope == 'folder' or r.gradient_scope == 'both'
 
   if r.pattern == '' and r.only == nil then
     w[#w + 1] = 'matches every ' .. (M.KIND_NOUN[r.kind] or 'object') ..
@@ -145,6 +194,18 @@ function M.warnings(r)
   if r.color2 and r.kind == 'item' then
     w[#w + 1] = 'gradients over items are recomputed in full on every change -- ' ..
                 'slow on very large projects'
+  end
+
+  -- Two combinations quietly flatten a gradient to a single colour.
+  if r.color2 and by_folder and r.only == 'folder' then
+    w[#w + 1] = 'grouped by folder, but this rule only matches folder parents -- ' ..
+                'each one is alone in its group, so every match gets the first colour'
+  end
+
+  if r.color2 and by_folder and options and options.propagate_folders == 'force' then
+    w[#w + 1] = 'grouped by folder while folder colours are set to "force" -- ' ..
+                'each parent overwrites its children, so the whole gradient ' ..
+                'collapses to the first colour'
   end
 
   if r.cascade_items and r.color2 then

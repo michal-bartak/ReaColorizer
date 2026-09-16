@@ -898,6 +898,285 @@ do
   check(m['T2'] ~= RED and m['T2'] ~= BLU, 'gradient middle is distinct')
 end
 
+--------------------------------------------------- gradient grouping
+-- A gradient used to spread across every match in the project. It now restarts
+-- per group, and gradient_scope says what separates one group from the next.
+
+local function grad_rule(o)
+  o.color, o.color2 = RED, BLU
+  return o
+end
+
+do -- runs: a track the rule does not win ends the gradient
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'run' } } }
+  local entries = { tr('String1'), tr('String2'), tr('String3'),
+                    tr('Bus'),
+                    tr('String11'), tr('String12'), tr('String13') }
+  local m = planmap(entries, rs, { propagate_folders = 'off' })
+  check(m['String1']  == RED, 'first run starts at colour 1')
+  check(m['String3']  == BLU, 'and ends at colour 2')
+  check(m['String11'] == RED, 'the second run starts over')
+  check(m['String13'] == BLU, 'and ends at colour 2 as well')
+  check(m['String2'] == m['String12'], 'matching positions get the same shade')
+  check(m['String2'] ~= RED and m['String2'] ~= BLU, 'and it really is mid-ramp')
+end
+
+do -- 'all' keeps the old whole-project spread
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'all' } } }
+  local entries = { tr('String1'), tr('String2'), tr('String3'),
+                    tr('Bus'),
+                    tr('String11'), tr('String12'), tr('String13') }
+  local m = planmap(entries, rs, { propagate_folders = 'off' })
+  check(m['String13'] == BLU, 'the ramp ends at the last match in the project')
+  check(m['String3']  ~= BLU, 'and does not restart at the gap')
+end
+
+do -- a lone match is a group of one, so it gets the first colour
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'run' } } }
+  local m = planmap({ tr('String1'), tr('Bus'), tr('String2') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['String1'] == RED and m['String2'] == RED,
+        'a group of one gets the first colour')
+end
+
+do -- a DIFFERENT rule between two matches also ends the run
+  local rs = ruleset{ track = {
+    grad_rule{ mode = 'substring', pattern = 'String', gradient_scope = 'run' },
+    { mode = 'substring', pattern = 'Bass', color = GRN },
+  } }
+  local m = planmap({ tr('String1'), tr('Bass'), tr('String2') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['String1'] == RED and m['String2'] == RED,
+        'a run is a stretch won by the SAME rule, not merely "matched"')
+end
+
+do -- context entries take part in grouping, both ways round
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'run' } } }
+  local m = planmap({ tr('String1'), tr('String2'),
+                      tr('Bus', { context = true }), tr('String3') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['String3'] == RED, 'a context entry ends a run like any other')
+
+  -- The guarantee this protects: apply-to-selection must colour a track the
+  -- same as apply-all. Under selected_only the unselected tracks come through
+  -- as context, so if grouping ignored them the ranks would differ.
+  local all = planmap({ tr('String1'), tr('String2'), tr('String3') }, rs,
+                      { propagate_folders = 'off' })
+  local sel = planmap({ tr('String1', { context = true }), tr('String2'),
+                        tr('String3') }, rs, { propagate_folders = 'off' })
+  check(all['String2'] == sel['String2'] and all['String3'] == sel['String3'],
+        'a selection gets the same colours as a full apply')
+end
+
+do -- one kind's entries never split another kind's run
+  local rs = ruleset{ region = { grad_rule{ mode = 'substring', pattern = 'Ch',
+                                            gradient_scope = 'run' } } }
+  -- regions are region-scope-coerced to 'all', so this also pins that coercion
+  local m = planmap({ region('Ch1'), marker('X'), region('Ch2') }, rs, {})
+  check(m['Ch1'] == RED and m['Ch2'] == BLU,
+        'a marker between two regions does not split them')
+end
+
+do -- folders
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'folder' } } }
+  local entries = {
+    tr('String1',  { fd = 1 }), tr('String2', { depth = 1 }),
+    tr('String3',  { fd = -1, depth = 1 }),
+    tr('String11', { fd = 1 }), tr('String12', { depth = 1 }),
+    tr('String13', { fd = -1, depth = 1 }),
+  }
+  local m = planmap(entries, rs, { propagate_folders = 'off' })
+  check(m['String1'] == RED and m['String11'] == RED, 'each folder starts its own ramp')
+  check(m['String3'] == BLU and m['String13'] == BLU, 'and runs to the end of it')
+end
+
+do -- with no folders at all, folder scope behaves like 'all'
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('String1'), tr('String2'), tr('String3') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['String3'] == BLU, 'tracks outside any folder share one group')
+end
+
+do -- the root group spans a folder: structure decides, not adjacency
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'A',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('A1'), tr('F', { fd = 1 }),
+                      tr('Kid', { depth = 1, fd = -1 }), tr('A2') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['A1'] == RED and m['A2'] == BLU,
+        'top-level matches stay one group across an intervening folder')
+end
+
+do -- a nested folder starts its own group
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Vln',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('Strings', { fd = 1 }), tr('Vln1', { depth = 1 }),
+                      tr('Solo', { fd = 1, depth = 1 }), tr('Vln2', { depth = 2 }),
+                      tr('Vln3', { fd = -2, depth = 2 }) }, rs,
+                    { propagate_folders = 'off' })
+  check(m['Vln1'] == RED, 'the outer folder ramp starts')
+  check(m['Vln2'] == RED, 'and the inner folder starts a fresh one')
+  check(m['Vln3'] == BLU, 'which runs to the end of the inner folder')
+end
+
+do -- the parent need not match for its children to be grouped by it
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('Bus', { fd = 1 }), tr('String1', { depth = 1 }),
+                      tr('String2', { depth = 1 }),
+                      tr('String3', { fd = -1, depth = 1 }) }, rs,
+                    { propagate_folders = 'off' })
+  check(m['String1'] == RED and m['String3'] == BLU,
+        'children ramp inside a folder whose parent does not match')
+  check(m['Bus'] == nil, 'and the parent is left alone')
+end
+
+do -- THE difference between the two modes, on identical entries
+  local entries = { tr('F', { fd = 1 }), tr('String1', { depth = 1 }),
+                    tr('Perc', { depth = 1 }),
+                    tr('String2', { fd = -1, depth = 1 }) }
+  local byfolder = planmap(entries,
+    ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                  gradient_scope = 'folder' } } },
+    { propagate_folders = 'off' })
+  check(byfolder['String1'] == RED and byfolder['String2'] == BLU,
+        'by folder, a non-matching track in the middle is ignored')
+
+  local byrun = planmap(entries,
+    ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'String',
+                                  gradient_scope = 'run' } } },
+    { propagate_folders = 'off' })
+  check(byrun['String1'] == RED and byrun['String2'] == RED,
+        'by run, it splits them into two groups of one')
+end
+
+do -- 'both' breaks on a gap AND on a folder edge
+  -- note the pattern: 'S' would match "Bus" too (matching ignores case by
+  -- default), so the separator has to be something the rule really misses
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'both' } } }
+  local m = planmap({ tr('Str1', { fd = 1 }), tr('Str2', { fd = -1, depth = 1 }),
+                      tr('Str3'), tr('Bus'), tr('Str4') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['Str1'] == RED and m['Str2'] == BLU, 'the folder is one group')
+  check(m['Str3'] == RED, 'leaving the folder starts another')
+  check(m['Str4'] == RED, 'and the gap starts a third')
+end
+
+do -- a -2 close pops both levels of the container stack
+  local fg = AP.folder_groups({ tr('Outer', { fd = 1 }), tr('Inner', { fd = 1 }),
+                                tr('Leaf', { fd = -2 }), tr('After') })
+  check(fg[1] ~= 0 and fg[2] ~= 0, 'the two folders have containers')
+  check(fg[1] ~= fg[2], 'and they are different ones')
+  check(fg[3] == fg[2], 'the leaf belongs to the inner folder')
+  check(fg[4] == 0, 'and a -2 close returns to the root')
+end
+
+do -- items: a change of track ends the run
+  local rs = ruleset{ item = { grad_rule{ mode = 'substring', pattern = 'a',
+                                          gradient_scope = 'run' } } }
+  local m = planmap({ tr('T1'), tr('T2'),
+                      item('a1', { on = 'T1' }), item('a2', { on = 'T1' }),
+                      item('a3', { on = 'T2' }), item('a4', { on = 'T2' }) }, rs,
+                    { propagate_folders = 'off' })
+  check(m['a1'] == RED and m['a2'] == BLU, 'the first track ramps fully')
+  check(m['a3'] == RED and m['a4'] == BLU, 'and so does the second, separately')
+end
+
+do -- scope is coerced to what each kind can actually use
+  check(RU.new('track', { gradient_scope = 'folder' }).gradient_scope == 'folder',
+        'tracks keep folder scope')
+  check(RU.new('item', { gradient_scope = 'folder' }).gradient_scope == 'run',
+        'items fall back to run -- folder ordering means nothing for them')
+  check(RU.new('item', { gradient_scope = 'both' }).gradient_scope == 'run',
+        'and so does "both"')
+  check(RU.new('region', { gradient_scope = 'run' }).gradient_scope == 'all',
+        'regions are not grouped')
+  check(RU.new('marker', { gradient_scope = 'folder' }).gradient_scope == 'all',
+        'nor are markers')
+  check(RU.new('track', { gradient_scope = 'banana' }).gradient_scope == 'run',
+        'an unknown value falls back to the default')
+  check(RU.new('track', {}).gradient_scope == 'run', 'and so does a missing one')
+end
+
+do -- the two combinations that quietly flatten a gradient
+  local r1 = RU.new('track', { pattern = 'drum', color2 = BLU,
+                               gradient_scope = 'folder', only = 'folder' })
+  local found = false
+  for _, w in ipairs(RU.warnings(r1)) do
+    if w:find('alone in its group', 1, true) then found = true end
+  end
+  check(found, 'warns when folder scope meets a folder-parents-only rule')
+
+  local r2 = RU.new('track', { pattern = 'str', color2 = BLU,
+                               gradient_scope = 'folder' })
+  found = false
+  for _, w in ipairs(RU.warnings(r2, { propagate_folders = 'force' })) do
+    if w:find('collapses', 1, true) then found = true end
+  end
+  check(found, 'warns when folder scope meets forced folder colours')
+  check(#RU.warnings(r2, { propagate_folders = 'fill_unmatched' }) == 0,
+        'and says nothing under the default folder policy')
+end
+
+do -- forcing folder colours really does flatten it, as the warning says
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('Str1', { fd = 1 }), tr('Str2', { depth = 1 }),
+                      tr('Str3', { fd = -1, depth = 1 }) }, rs,
+                    { propagate_folders = 'force' })
+  check(m['Str1'] == RED and m['Str2'] == RED and m['Str3'] == RED,
+        'the parent overwrites its children with colour 1')
+end
+
+do -- plan() reports where each match sits, for "why is it this colour?"
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'run' } } }
+  local entries = { tr('Str1'), tr('Str2'), tr('Str3') }
+  local _, _, _, _, _, grad = AP.plan(entries, rs, { propagate_folders = 'off' })
+  check(grad[2] and grad[2].rank == 2 and grad[2].size == 3,
+        'the middle track reports step 2 of 3',
+        grad[2] and (grad[2].rank .. '/' .. grad[2].size))
+
+  -- a flat rule reports nothing
+  local flat = ruleset{ track = { { mode = 'substring', pattern = 'Str', color = RED } } }
+  local _, _, _, _, _, g2 = AP.plan(entries, flat, { propagate_folders = 'off' })
+  check(g2[1] == nil, 'a rule with no gradient reports no position')
+end
+
+do -- the hot and cold auto-loop sweeps must agree about track colours.
+   -- The hot pass plans over tracks alone; the cold pass plans over the same
+   -- tracks as CONTEXT plus items and markers. If grouping depended on items
+   -- being present, or skipped context entries, the two would disagree and the
+   -- colours would flicker between sweeps.
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'run' } } }
+  local tracks = { tr('Str1'), tr('Str2'), tr('Bus'), tr('Str3'), tr('Str4') }
+  local hot = planmap(tracks, rs, { propagate_folders = 'off' })
+
+  local cold = {}
+  for _, t in ipairs({ 'Str1', 'Str2', 'Bus', 'Str3', 'Str4' }) do
+    cold[#cold + 1] = tr(t, { context = true })
+  end
+  cold[#cold + 1] = item('x', { on = 'Str1' })
+  cold[#cold + 1] = region('R1')
+  local _, _, desired = AP.plan(cold, rs, { propagate_folders = 'off' })
+
+  local same = true
+  for i, e in ipairs(cold) do
+    if e.kind == 'track' and hot[e.name] ~= nil and desired[i] ~= hot[e.name] then
+      same = false
+    end
+  end
+  check(same, 'the hot and cold sweeps compute identical track colours')
+end
+
 -- folder propagation
 local function folderset()
   return { tr('Drums', { fd = 1 }), tr('Kick'), tr('Snare', { fd = -1 }), tr('Vox') }

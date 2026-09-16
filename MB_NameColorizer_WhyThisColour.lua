@@ -35,7 +35,7 @@ if not item and not track then
 end
 
 local entries = targets.all(0, {})
-local ops, stats, desired, winner, from_track =
+local ops, stats, desired, winner, from_track, grad =
   apply.plan(entries, cfg.rules, cfg.options)
 
 -- locate the selected object in the plan
@@ -81,6 +81,19 @@ if r then
   w('  mode          : %s%s', r.mode, r.ci and ', ignore case' or '')
   w('  pattern       : "%s"', r.pattern)
   if r.only then w('  filter        : %s', r.only) end
+
+  -- A gradient means the colour depends on WHERE in its group this object sits,
+  -- which is otherwise impossible to reason about from the outside.
+  local g = grad[idx]
+  if g then
+    w('  gradient      : step %d of %d', g.rank, g.size)
+    w('                  starts over: %s',
+      require('rules').GRADIENT_LABEL[r.gradient_scope] or '?')
+    if g.size == 1 then
+      w('                  NOTE: alone in its group, so it gets the first')
+      w('                        colour and the gradient is invisible here')
+    end
+  end
 elseif from_track[idx] then
   w('MATCHED BY      : nothing on the Items tab --')
   w('                  it takes the colour of the track it sits on,')

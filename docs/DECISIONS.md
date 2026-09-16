@@ -123,6 +123,48 @@ against what Apply wrote, object by object.
   the flag is not enough: `applied` must be cleared too, or the next sweep
   re-detects the manual colour and sets it straight back.
 
+## Gradients restart per group
+
+`gradient_scope` is per rule (`all` / `run` / `folder` / `both`, default `run`),
+because the setting is meaningless without `color2`, which is per rule.
+
+Grouping is a group index folded into the key that pass 1 already counts
+matches under. Three things it must get right:
+
+* **Per kind.** `targets.markers` interleaves markers and regions, so a marker
+  must not split a run of regions.
+* **Same rule, not merely "matched".** A run is a stretch won by the *same*
+  rule, so `String1, Bass, String2` is two groups.
+* **Context entries take part in full.** `targets.tracks` returns every track
+  under `selected_only`, flagging the unselected ones as context. If grouping
+  skipped them, *apply to selection* would compute different colours from
+  *apply all* for the very same tracks. This is a correctness invariant, not an
+  optimisation, and it is pinned by a test.
+
+Items additionally break on a change of track — they are enumerated per track,
+so without it a run would ramp straight across a track boundary. Folder scope is
+tracks only: the ordering inside a folder (track order, then item order) is not
+something anyone can predict from the arrange view. Regions and markers are not
+grouped at all.
+
+The folder container map mirrors the propagation stack in pass 3 exactly,
+multi-level close included, so the two can never disagree about where a folder
+ends. `groups` is a nested table rather than a concatenated string key: pass 1
+runs over every track on every auto-loop tick, and per-entry string garbage
+there is not free.
+
+No config version bump. A missing `gradient_scope` defaults to `run`, and
+because rule edits do not repaint the project, any change of appearance waits
+for the next Apply — the same as editing a colour.
+
+**Deliberately not built:** an "auto" mode that picks between run and folder by
+inspecting the project. Colour would then depend on a global heuristic that
+flips on a single structural edit, with nothing in the UI explaining why.
+
+The real fix for gradient instability is a fixed denominator (a per-rule
+`gradient_steps`, 0 = use the group size) so adding a member does not move the
+existing ones. That is orthogonal to grouping and not done here.
+
 ## Config
 
 One global JSON file at `<resource path>/NameColorizer/config.json`, kept
