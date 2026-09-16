@@ -204,10 +204,12 @@ local function clear_popup()
     app.clear_colors('selected')
   end
   if ImGui.IsItemHovered(ctx) then
-    ImGui.SetTooltip(ctx, 'Resets the selected tracks and items to the theme\n' ..
-                          'default, whether or not a rule matches them.\n' ..
-                          'Regions and markers are left alone -- they have no\n' ..
-                          'selection this can read.')
+    ImGui.SetTooltip(ctx, 'Resets what is selected to the theme default,\n' ..
+                          'whether or not a rule matches it.\n\n' ..
+                          'Follows the same focus rule as Selection: with both\n' ..
+                          'a track and items selected, whichever you clicked\n' ..
+                          'last wins. Regions and markers are left alone --\n' ..
+                          'they have no selection this can read.')
   end
 
   if ImGui.MenuItem(ctx, 'Clear EVERY custom colour in the project...') then
@@ -289,7 +291,11 @@ local function action_bar(FS)
   ImGui.SameLine(ctx)
   if ImGui.Button(ctx, 'Selection', FS * 6) then app.apply_selection() end
   if ImGui.IsItemHovered(ctx) then
-    ImGui.SetTooltip(ctx, 'Colour only the selected tracks and items.')
+    ImGui.SetTooltip(ctx, 'Colour only what is selected.\n\n' ..
+                          'When a track AND some items are selected, whichever\n' ..
+                          'you clicked last wins -- the same rule REAPER uses\n' ..
+                          'for its own "depending on focus" actions. The status\n' ..
+                          'line says which it used.')
   end
 
   ImGui.SameLine(ctx)

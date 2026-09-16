@@ -283,14 +283,37 @@ function M.apply_all()
   end
 end
 
+--- The scope for a selection action, once the cursor context has decided which
+--- of two live selections was meant. Shared by apply and clear so the two can
+--- never disagree about what "the selection" is.
+--- @return opts, focus, noun
+local function selection_scope()
+  local focus = targets.selection_focus(0)
+  local opts  = { selected_only = true, want_markers = false }
+  local noun  = 'object'
+
+  if focus == 'items' then
+    -- Tracks stay enumerated but none of them is writable: folder inheritance
+    -- and the track->item cascade still need to see them.
+    opts.tracks_as_context = true
+    noun = 'item'
+  elseif focus == 'tracks' then
+    opts.want_items = false
+    noun = 'track'
+  end
+  return opts, focus, noun
+end
+
 function M.apply_selection()
   M.flush(true)
-  local stats = apply.run(0, st.cfg.rules, st.cfg.options,
-                          { selected_only = true, want_markers = false },
+  local scope, _, noun = selection_scope()
+  local stats = apply.run(0, st.cfg.rules, st.cfg.options, scope,
                           'Colorize selection by name')
   M.refresh_entries(true)
   M.toast(stats.scanned == 0 and 'Nothing is selected.'
-          or string.format('Coloured %d of %d selected.', stats.written, stats.scanned))
+          or string.format('Coloured %d of %d selected %s%s.',
+                           stats.written, stats.scanned, noun,
+                           stats.scanned == 1 and '' or 's'))
 end
 
 --- scope: 'matched' | 'all' | 'selected'
@@ -300,8 +323,8 @@ end
 function M.clear_colors(scope)
   M.flush(true)
   local sel = (scope == 'selected')
-  local entries = targets.all(0, sel and { selected_only = true, want_markers = false }
-                                     or {})
+  local sopts, _, noun = selection_scope()
+  local entries = targets.all(0, sel and sopts or {})
   local ops = apply.plan_clear(entries, st.cfg.rules, scope, st.cfg.options)
 
   if #ops == 0 then
@@ -311,7 +334,7 @@ function M.clear_colors(scope)
       local n = 0
       for _, e in ipairs(entries) do if not e.context then n = n + 1 end end
       M.toast(n == 0 and 'Nothing is selected.'
-              or 'Nothing to clear in the selection.')
+              or ('No selected ' .. noun .. ' has a colour to clear.'))
     else
       M.toast('Nothing to clear.')
     end
@@ -321,7 +344,8 @@ function M.clear_colors(scope)
   local written = apply.commit(ops, sel and 'Clear colours on selection'
                                         or 'Clear colours')
   M.refresh_entries(true)
-  M.toast(string.format('Cleared %d object%s%s.', written,
+  M.toast(string.format('Cleared %d %s%s%s.', written,
+                        sel and noun or 'object',
                         written == 1 and '' or 's',
                         sel and ' in the selection' or ''))
 end

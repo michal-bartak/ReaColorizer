@@ -38,6 +38,47 @@ local floor = math.floor
 -- @param opts { selected_only = bool }
 -- The master track is deliberately NOT enumerated: REAPER does not honour a
 -- custom colour on it, so colouring it is not something this tool can do.
+--- Which selection did the user actually mean?
+---
+--- A track selection and an item selection can both be live at once -- select
+--- a track, then click some items, and the track selection just sits there.
+--- REAPER answers this for its own "...depending on focus" actions with the
+--- cursor context, so do the same rather than inventing a rule.
+---
+--- Measured, not assumed (MB_NameColorizer_FocusProbe.lua): GetCursorContext()
+--- is useless from a script -- it reported "unknown" (-1) on every single run,
+--- because the running action is not the arrange view. GetCursorContext2 with
+--- want_last_valid keeps the last real answer and tracked clicks correctly.
+---
+--- The counts are checked BEFORE the context, and that ordering matters: the
+--- context goes stale. The probe caught a run reading "items" with zero items
+--- selected, which would otherwise have coloured nothing at all.
+---
+--- @return 'tracks'|'items'|'both'|nil, n_tracks, n_items
+function M.selection_focus(proj)
+  local ntr = reaper.CountSelectedTracks(proj)
+  local nit = reaper.CountSelectedMediaItems(proj)
+
+  if ntr == 0 and nit == 0 then return nil,     ntr, nit end
+  if nit == 0              then return 'tracks', ntr, nit end
+  if ntr == 0              then return 'items',  ntr, nit end
+
+  local c
+  if reaper.APIExists('GetCursorContext2') then
+    c = reaper.GetCursorContext2(true)
+  end
+  if c == 1 then return 'items',  ntr, nit end
+  if c == 0 then return 'tracks', ntr, nit end
+
+  -- Envelopes, or no answer at all: honour both, which is what this did before
+  -- the context was consulted. Guessing is worse than doing as you are told.
+  return 'both', ntr, nit
+end
+
+--- @param opts.tracks_as_context  every track is context, so nothing is written
+---        to any of them. Used when the cursor context says the item selection
+---        is what was meant -- the tracks are still enumerated, because folder
+---        inheritance and the track->item cascade need them.
 function M.tracks(proj, opts)
   opts = opts or {}
   local list = {}
@@ -58,7 +99,9 @@ function M.tracks(proj, opts)
       folderdepth = fd, depth = depth, spacer_above = spacer,
       guid = reaper.GetTrackGUID(tr),
       color = reaper.GetMediaTrackInfo_Value(tr, 'I_CUSTOMCOLOR'),
-      context = opts.selected_only and not reaper.IsTrackSelected(tr) or nil,
+      context = opts.selected_only
+                and (opts.tracks_as_context or not reaper.IsTrackSelected(tr))
+                or nil,
     }
 
     if fd >= 1 then

@@ -74,6 +74,13 @@ function M.install(opts)
 
   r.CountMediaItems = function() return #P.items end
   r.GetMediaItem    = function(_, i) return P.items[i+1] end
+  r.CountSelectedTracks = function()
+    local n = 0; for _, t in ipairs(P.tracks) do if t.sel then n = n + 1 end end; return n
+  end
+  -- The cursor context the focus probe measured. P.cursor_context is nil until
+  -- a test sets it, and APIExists then reports GetCursorContext2 as missing --
+  -- which is the case a build without it would present.
+  r.GetCursorContext = function() return -1 end     -- as measured: always -1
   r.CountSelectedMediaItems = function()
     local n = 0; for _, it in ipairs(P.items) do if it.sel then n = n + 1 end end; return n
   end
@@ -127,6 +134,10 @@ function M.install(opts)
       end
     end
     return false
+  end
+  function P.set_cursor_context(v)
+    P.cursor_context = v
+    r.GetCursorContext2 = v ~= nil and function() return v end or nil
   end
   r.APIExists = function(n)
     if opts.no_modern_markers then

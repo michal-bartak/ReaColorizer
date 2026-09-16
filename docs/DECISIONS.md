@@ -289,3 +289,38 @@ pressed. It does not apply to unmatched objects under *reset when unmatched*,
 because the loop records "we wrote nothing" rather than "we wrote default", so
 there is no baseline to compare a later manual change against. Apply Now
 overrules in both cases.
+
+## "The selection" is decided by focus, not by counting
+
+A track selection and an item selection are independent in REAPER and can both
+be live at once. Select a track, then click three items, and the track is still
+selected -- it is a remainder, not an instruction. `Selection` and `Clear
+selected objects` used to honour both, so the left-over track got recoloured.
+
+REAPER resolves this for its own `...depending on focus` actions with the cursor
+context, and `targets.selection_focus` does the same. Inventing a different rule
+would make this tool behave unlike everything around it.
+
+**Measured, not assumed** (`MB_NameColorizer_FocusProbe.lua`):
+
+* `GetCursorContext()` is **useless from a script**. It reported `-1` (unknown)
+  on every run, because the running action is not the arrange view.
+  `GetCursorContext2(true)` -- "last valid" -- is the one that works, and it
+  tracked clicks correctly across track panels and items.
+* Running an action does not clear it, so reading it from a button in the GUI
+  is sound.
+
+**The counts are checked before the context, and the order matters.** The
+context goes stale: the probe caught a run reporting `items` with zero items
+selected. Consulting the context first would have coloured nothing at all.
+
+An envelope context, or a build with no `GetCursorContext2`, decides nothing and
+both selections are honoured -- the behaviour from before the context was
+consulted. Guessing is worse than doing as you are told.
+
+When the items win, tracks are still **enumerated** and merely flagged
+`context`: folder inheritance and the track->item cascade need to see them.
+Dropping them would change the colours the items get.
+
+The status line names which it used (`Coloured 3 of 3 selected items.`), so a
+wrong guess is visible immediately rather than discovered later.

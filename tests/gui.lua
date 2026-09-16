@@ -179,6 +179,66 @@ do
   check(left == 0, 'clear_colors("all") resets every track', left .. ' left')
 end
 
+---------------------------------------------- which selection was meant
+do
+  local targets = require 'targets'
+  local function sel(tracks, items, ctx)
+    for _, t in ipairs(P.tracks) do t.sel = false end
+    for _, i in ipairs(P.items)  do i.sel = false end
+    for _, i in ipairs(tracks) do P.tracks[i].sel = true end
+    for _, i in ipairs(items)  do P.items[i].sel  = true end
+    P.set_cursor_context(ctx)
+    return (targets.selection_focus(0))
+  end
+
+  check(sel({}, {}, nil) == nil, 'nothing selected has no focus')
+  check(sel({ 1 }, {}, 1) == 'tracks',
+        'a stale "items" context loses to an empty item selection')
+  check(sel({}, { 1 }, 0) == 'items',
+        'and a stale "tracks" context loses to an empty track selection')
+
+  -- the case this whole thing exists for
+  check(sel({ 1 }, { 1 }, 1) == 'items',
+        'both selected, context says items -> items')
+  check(sel({ 1 }, { 1 }, 0) == 'tracks',
+        'both selected, context says track panels -> tracks')
+  check(sel({ 1 }, { 1 }, 2) == 'both',
+        'an envelope context decides nothing, so honour both')
+  check(sel({ 1 }, { 1 }, nil) == 'both',
+        'and so does a build with no GetCursorContext2')
+
+  for _, t in ipairs(P.tracks) do t.sel = false end
+  for _, i in ipairs(P.items)  do i.sel = false end
+  P.set_cursor_context(nil)
+end
+
+do -- a remembered track selection is not written to when items are what is meant
+  app.st.cfg = config.starter()
+  app.clear_colors('all')
+  for _, t in ipairs(P.tracks) do t.sel = false end
+  for _, i in ipairs(P.items)  do i.sel = false end
+
+  P.tracks[1].sel = true      -- selected earlier and left behind
+  P.items[1].sel  = true      -- what the user actually clicked
+  P.set_cursor_context(1)     -- ...and the context agrees
+
+  app.apply_selection()
+  check(P.tracks[1].color == 0, 'the left-over track selection is not coloured')
+  check(app.current_toast():find('item') ~= nil,
+        'and the status line names what it used', tostring(app.current_toast()))
+
+  -- same selection, context says the track panel instead
+  app.clear_colors('all')
+  P.set_cursor_context(0)
+  app.apply_selection()
+  check(P.tracks[1].color ~= 0, 'with the focus on the panel the track IS coloured')
+
+  for _, t in ipairs(P.tracks) do t.sel = false end
+  for _, i in ipairs(P.items)  do i.sel = false end
+  P.set_cursor_context(nil)
+  app.clear_colors('all')
+end
+
 do -- clearing the selection touches the selection and nothing else
   app.st.cfg = config.starter()
   for _, t in ipairs(P.tracks) do t.sel = false end
