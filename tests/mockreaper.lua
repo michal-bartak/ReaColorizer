@@ -47,6 +47,7 @@ function M.install(opts)
   r.GetMediaTrackInfo_Value = function(t, parm)
     if parm == 'I_CUSTOMCOLOR' then return t.color or 0 end
     if parm == 'I_FOLDERDEPTH' then return t.fd or 0 end
+    if parm == 'I_SPACER' then return t.spacer and 1 or 0 end
     return 0
   end
   r.SetMediaTrackInfo_Value = function(t, parm, v)
@@ -180,6 +181,7 @@ function M.install(opts)
   function P.track(name, o)
     o = o or {}
     local t = { name = name, color = o.color or 0, fd = o.fd or 0,
+                spacer = o.spacer or false,
                 sel = o.sel or false, guid = '{T' .. (#P.tracks+1) .. '}' }
     P.tracks[#P.tracks+1] = t
     return t

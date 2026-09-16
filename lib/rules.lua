@@ -55,7 +55,8 @@ M.GRADIENT_SHORT = {
 M.GRADIENT_HELP = {
   all    = 'One ramp across every match in the project.',
   run    = 'A run is an unbroken stretch this rule wins. Anything it does not ' ..
-           'win ends one and starts the next.',
+           'win ends one and starts the next -- as does a visual spacer in ' ..
+           'the track panel.',
   folder = 'One ramp inside each folder.',
   both   = 'A new ramp at a gap or a folder edge, whichever comes first.',
 }

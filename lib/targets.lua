@@ -9,7 +9,8 @@
       guid    = string,          -- stable identity for the auto-loop cache
       color   = number,          -- raw I_CUSTOMCOLOR reading, un-normalised
       -- tracks only:
-      folderdepth = number, depth = number, idx = number
+      folderdepth = number, depth = number, idx = number,
+      spacer_above = boolean,    -- a REAPER visual spacer sits above it
       -- items only:
       track_guid = string,       -- which track it sits on, for the cascade
       -- any kind:
@@ -47,11 +48,14 @@ function M.tracks(proj, opts)
     local ok, name = reaper.GetSetMediaTrackInfo_String(tr, 'P_NAME', '', false)
     if not ok or name == nil then name = '' end
     local fd = floor(reaper.GetMediaTrackInfo_Value(tr, 'I_FOLDERDEPTH'))
+    -- REAPER 7 visual spacers. Stored on the track BELOW the gap:
+    --   I_SPACER : int * : 1=TCP track spacer above this track
+    local spacer = reaper.GetMediaTrackInfo_Value(tr, 'I_SPACER') ~= 0
 
     list[#list + 1] = {
       kind = 'track', obj = tr, idx = i,
       name = name,
-      folderdepth = fd, depth = depth,
+      folderdepth = fd, depth = depth, spacer_above = spacer,
       guid = reaper.GetTrackGUID(tr),
       color = reaper.GetMediaTrackInfo_Value(tr, 'I_CUSTOMCOLOR'),
       context = opts.selected_only and not reaper.IsTrackSelected(tr) or nil,

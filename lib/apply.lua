@@ -172,6 +172,9 @@ function M.plan(entries, rules, options)
               -- items are enumerated per track, so without this a run would
               -- ramp straight across a track boundary
               or (k == 'item' and last_track[k] ~= e.track_guid)
+              -- a REAPER visual spacer is the user drawing the break themselves,
+              -- which is a plainer statement of intent than a gap in matches
+              or (k == 'track' and e.spacer_above == true)
 
     if gap then nrun = nrun + 1; run_seq[k] = nrun end
     if gap or last_fold[k] ~= fold then nboth = nboth + 1; both_seq[k] = nboth end

@@ -717,7 +717,7 @@ local function tr(name, o)
   o = o or {}
   return { kind = 'track', name = name, guid = 'g:' .. name,
            folderdepth = o.fd or 0, depth = o.depth or 0,
-           context = o.context,
+           context = o.context, spacer_above = o.spacer,
            color = o.color and CO.to_native(o.color) or 0 }
 end
 local function item(name, o)
@@ -931,6 +931,34 @@ do -- 'all' keeps the old whole-project spread
   local m = planmap(entries, rs, { propagate_folders = 'off' })
   check(m['String13'] == BLU, 'the ramp ends at the last match in the project')
   check(m['String3']  ~= BLU, 'and does not restart at the gap')
+end
+
+do -- a REAPER visual spacer ends a run, with no separator track needed
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'run' } } }
+  -- the spacer is stored on the track BELOW the gap (I_SPACER = "above this")
+  local m = planmap({ tr('Str1'), tr('Str2'), tr('Str3'),
+                      tr('Str4', { spacer = true }), tr('Str5'), tr('Str6') }, rs,
+                    { propagate_folders = 'off' })
+  check(m['Str1'] == RED and m['Str3'] == BLU, 'the run above the spacer ramps fully')
+  check(m['Str4'] == RED and m['Str6'] == BLU, 'and the one below starts over')
+  check(m['Str2'] == m['Str5'], 'matching positions match')
+
+  -- with no spacer the same six tracks are one ramp
+  local m2 = planmap({ tr('Str1'), tr('Str2'), tr('Str3'),
+                       tr('Str4'), tr('Str5'), tr('Str6') }, rs,
+                     { propagate_folders = 'off' })
+  check(m2['Str3'] ~= BLU, 'without the spacer they are a single group')
+end
+
+do -- a spacer does not disturb folder grouping, which is structural
+  local rs = ruleset{ track = { grad_rule{ mode = 'substring', pattern = 'Str',
+                                           gradient_scope = 'folder' } } }
+  local m = planmap({ tr('Str1', { fd = 1 }), tr('Str2', { depth = 1, spacer = true }),
+                      tr('Str3', { fd = -1, depth = 1 }) }, rs,
+                    { propagate_folders = 'off' })
+  check(m['Str1'] == RED and m['Str3'] == BLU,
+        'by folder, a spacer inside the folder is ignored')
 end
 
 do -- a lone match is a group of one, so it gets the first colour
