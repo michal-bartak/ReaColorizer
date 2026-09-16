@@ -60,6 +60,7 @@ function M.new(opts)
     TableGetColumnName = function(_, c) return 'col' .. tostring(c) end,
     TableSetColumnIndex = function() return true end,
     GetCursorPos  = function() return 0, 0 end,
+    GetCursorScreenPos = function() return 100, 200 end,
     GetStyleColor = function() return 0x808080FF end,
     GetWindowDrawList = function() return { 'drawlist' } end,
     IsPopupOpen = function() return false end,

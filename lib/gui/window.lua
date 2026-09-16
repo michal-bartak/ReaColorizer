@@ -345,6 +345,9 @@ function M.draw(FS)
   -- One ordered list per object kind. Precedence is per-kind, so reordering
   -- your track rules cannot change which region wins.
   theme.push_tab_padding(FS)
+  -- Suppress ImGui's own tab-bar separator; theme.tab_shelf draws one that is
+  -- exactly as wide as the table instead of overhanging it.
+  ImGui.PushStyleVar(ctx, ImGui.StyleVar_TabBarBorderSize, 0)
   if ImGui.BeginTabBar(ctx, 'kinds') then
     for _, kind in ipairs(rulesmod.KINDS) do
       local on, total = app.count(kind)
@@ -354,20 +357,31 @@ function M.draw(FS)
         theme.pop_tab_padding()          -- contents use ordinary padding
         st.active_kind = kind
 
+        -- The table joins the open tab: no gap, and a shelf line the same
+        -- width as the table. The header row below picks up the tab's colour
+        -- (theme.headers_row), so the two read as one surface.
+        theme.close_tab_gap()
+        theme.tab_shelf()
+
+        ruletbl.draw(kind, FS, math.max(tableh, FS * 6))
+
+        -- Below the table, not above it: anything between the shelf and the
+        -- header would break the join, and these notes point at the action bar
+        -- underneath anyway.
         if total == 0 then
           ImGui.TextColored(ctx, rgba(COL_DIM), 'No ' ..
-            (rulesmod.KIND_NOUN[kind] or '') .. ' rules yet -- add one above.')
+            (rulesmod.KIND_NOUN[kind] or '') .. ' rules yet -- add one below.')
         elseif on == 0 then
           ImGui.TextColored(ctx, rgba(COL_WARN), 'Every rule on this tab is switched off.')
         end
 
-        ruletbl.draw(kind, FS, math.max(tableh, FS * 6))
         theme.push_tab_padding(FS)       -- restore for the strip itself
         ImGui.EndTabItem(ctx)
       end
     end
     ImGui.EndTabBar(ctx)
   end
+  ImGui.PopStyleVar(ctx)               -- TabBarBorderSize
   theme.pop_tab_padding()
 
   ImGui.Spacing(ctx)

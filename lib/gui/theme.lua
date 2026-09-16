@@ -64,6 +64,9 @@ M.TABLE_V_LINES   = false  -- vertical grid lines between columns?
                            -- cannot both be had.
 M.TABLE_OUTER     = true   -- the border around the whole table
 
+M.HEADER_FOLLOWS_TAB = true  -- paint the table's header row in the open tab's
+                             -- colour, so tab and table read as one surface
+
 M.HANDLE_ALPHA          = 0.50   -- the reorder grip, at rest
 M.HANDLE_ALPHA_HOVER    = 0.70
 M.HANDLE_ALPHA_SELECTED = 0.90
@@ -376,7 +379,46 @@ end
 --- A header row where chosen columns are centred. TableHeadersRow always
 --- left-aligns, so the row has to be emitted by hand.
 --- @param centred set of column indices (0-based) to centre
+--- The open tab's colour. Anything meant to read as attached to the tab strip
+--- takes its colour from here rather than from a constant, so it follows
+--- whatever theme ReaImGui is running.
+function M.tab_selected_color()
+  return ImGui.GetStyleColor(ctx, ImGui.Col_TabSelected)
+end
+
+--- The shelf the tab strip sits on, drawn by hand.
+---
+--- ImGui draws its own, but widens it past the tab bar on BOTH sides:
+---
+---   separator_min_x = BarRect.Min.x - IM_TRUNC(WindowPadding.x * 0.5)
+---   separator_max_x = BarRect.Max.x + IM_TRUNC(WindowPadding.x * 0.5)
+---
+--- With the default padding of 8 that is 4px of line hanging past the tabs and
+--- past the table below them. StyleVar_TabBarBorderSize = 0 suppresses it (the
+--- draw is guarded on that being > 0) and this puts one back at exactly the
+--- content width, so the strip and the table share an edge.
+---
+--- Call it where the tab's content starts, with the cursor already pulled up
+--- against the bar.
+function M.tab_shelf()
+  local x, y = ImGui.GetCursorScreenPos(ctx)
+  local w    = ImGui.GetContentRegionAvail(ctx)
+  ImGui.DrawList_AddRectFilled(ImGui.GetWindowDrawList(ctx),
+                               x, y - 1, x + w, y, M.tab_selected_color())
+end
+
+--- Butt the next item up against the tab strip. ImGui leaves an ItemSpacing
+--- gap there, which breaks the join between the open tab and the table.
+function M.close_tab_gap()
+  local _, sy = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
+  ImGui.SetCursorPosY(ctx, ImGui.GetCursorPosY(ctx) - sy)
+end
+
 function M.headers_row(ncolumns, centred)
+  local tinted = M.HEADER_FOLLOWS_TAB
+  if tinted then
+    ImGui.PushStyleColor(ctx, ImGui.Col_TableHeaderBg, M.tab_selected_color())
+  end
   ImGui.TableNextRow(ctx, ImGui.TableRowFlags_Headers)
   for c = 0, ncolumns - 1 do
     if ImGui.TableSetColumnIndex(ctx, c) then
@@ -385,6 +427,7 @@ function M.headers_row(ncolumns, centred)
       ImGui.TableHeader(ctx, name)
     end
   end
+  if tinted then ImGui.PopStyleColor(ctx) end
 end
 
 return M

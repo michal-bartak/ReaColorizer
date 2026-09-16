@@ -665,6 +665,50 @@ do
         string.format('%s of %d', tostring(last_msg), #loud_texts))
 end
 
+------------------------------------- the table joins the open tab
+do
+  -- Three separate things have to hold for the join to read as one surface,
+  -- and each has failed on its own during development.
+  local events = {}
+  local ImGui
+  ImGui = mockimgui.new{ scripted = {
+    PushStyleVar = function(_, idx, a)
+      if idx == ImGui.StyleVar_TabBarBorderSize then
+        events[#events + 1] = 'noborder:' .. tostring(a)
+      end
+    end,
+    SetCursorPosY = function(_, y) events[#events + 1] = 'pullup:' .. tostring(y) end,
+    DrawList_AddRectFilled = function(_, x0, y0, x1, y1, col)
+      events[#events + 1] = string.format('shelf:%g,%g,%g,%g,%d', x0, y0, x1, y1, col)
+    end,
+    PushStyleColor = function(_, idx, col)
+      if idx == ImGui.Col_TableHeaderBg then
+        events[#events + 1] = 'headerbg:' .. tostring(col)
+      end
+    end,
+  } }
+  window.init(ImGui, { 'ctx' }); theme.init(ImGui, { 'ctx' })
+  P.advance(1); app.recompute_preview()
+  assert(pcall(window.draw, 14))
+
+  local seen = {}
+  for _, e in ipairs(events) do seen[e:match('^[^:]+')] = e end
+
+  check(seen.noborder == 'noborder:0',
+        "ImGui's own tab separator is suppressed", tostring(seen.noborder))
+  check(seen.pullup ~= nil, 'the content is pulled up against the tab strip')
+
+  -- The shelf spans the CONTENT width. The stub reports a 900-wide content
+  -- region at screen x=100, so a shelf that stopped at the tabs or ran past
+  -- the table would show up here.
+  check(seen.shelf == string.format('shelf:100,199,1000,200,%d',
+                                    ImGui.GetStyleColor(nil, ImGui.Col_TabSelected)),
+        'and a shelf is drawn at exactly the content width', tostring(seen.shelf))
+
+  check(seen.headerbg ~= nil,
+        'the header row is repainted in the open tab colour', tostring(seen.headerbg))
+end
+
 --------------------------------------- tabs sit on whole-pixel boundaries
 do
   -- ImGui truncates a tab's left edge to an integer but not its width, so a
