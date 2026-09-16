@@ -55,6 +55,8 @@ function M.new(opts)
     GetFrameHeight = function() return 20 end,
     GetCursorPosX = function() return 0 end,
     GetCursorPosY = function() return 0 end,
+    GetTextLineHeight = function() return 14 end,
+    GetTextLineHeightWithSpacing = function() return 18 end,
     TableGetColumnName = function(_, c) return 'col' .. tostring(c) end,
     TableSetColumnIndex = function() return true end,
     GetCursorPos  = function() return 0, 0 end,

@@ -607,6 +607,64 @@ do -- the dim is applied only while the dialog is open, and lifted before the
   check(not any_dim, 'nothing is dimmed while the dialog is closed')
 end
 
+------------------------------------- the status line holds its own space
+do
+  -- The complaint this encodes: the status message used to sit among the top
+  -- banners, so every message pushed the whole window down and let it spring
+  -- back six seconds later. Its space is now reserved whether or not there is
+  -- anything to say, which means every size handed to the tables and the
+  -- preview panels must come out identical either way.
+  local function layout(message)
+    local sizes, texts = {}, {}
+    local ImGui = mockimgui.new{ scripted = {
+      BeginTable = function(_, name, _, _, _, h)
+        sizes[#sizes + 1] = name .. '=' .. tostring(h); return true
+      end,
+      BeginChild = function(_, name, w, h)
+        sizes[#sizes + 1] = string.format('%s=%sx%s', name, tostring(w), tostring(h))
+        return true
+      end,
+      Text        = function(_, t) texts[#texts + 1] = tostring(t) end,
+      TextColored = function(_, _, t) texts[#texts + 1] = tostring(t) end,
+    } }
+    window.init(ImGui, { 'ctx' }); theme.init(ImGui, { 'ctx' })
+    P.advance(1)
+    app.recompute_preview()
+    if message then app.toast(message) else app.st.toast = nil end
+    assert(pcall(window.draw, 14))
+    app.st.toast = nil
+    return table.concat(sizes, ' '), texts
+  end
+
+  local MSG = 'Coloured 3 objects.'
+  local quiet, quiet_texts = layout(nil)
+  local loud,  loud_texts  = layout(MSG)
+
+  check(quiet:find('preview=') ~= nil and quiet:find('rules_track=') ~= nil,
+        'the frame lays out its tables and panels')
+  -- Weak on its own -- the stub reports a fixed content region, so it cannot
+  -- show real reflow. It guards the code path: the sizes must not be COMPUTED
+  -- from whether a message exists. The two assertions below are the ones that
+  -- fail against the old top-of-window banner.
+  check(quiet == loud, 'no size is computed from whether a message is showing',
+        quiet == loud and '' or ('\n  quiet: ' .. quiet .. '\n  loud:  ' .. loud))
+
+  local said = false
+  for _, t in ipairs(loud_texts) do if t == MSG then said = true end end
+  check(said, 'the message is shown')
+
+  local blank = false
+  for _, t in ipairs(quiet_texts) do if t == '' then blank = true end end
+  check(blank, 'and an empty line keeps its place when there is none')
+
+  -- It belongs at the foot: nothing the body draws may follow it.
+  local last_msg
+  for i, t in ipairs(loud_texts) do if t == MSG then last_msg = i end end
+  check(last_msg ~= nil and last_msg >= #loud_texts - 1,
+        'the status line is the last thing drawn in the body',
+        string.format('%s of %d', tostring(last_msg), #loud_texts))
+end
+
 ------------------------------------------------------- section headings
 do
   local drawn, size, seps

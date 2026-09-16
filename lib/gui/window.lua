@@ -53,9 +53,21 @@ local function banners(FS)
     ImGui.TextColored(ctx, rgba(COL_DIM), '(SWS > Auto Color/Icon/Layout)')
   end
 
+end
+
+--- The status line, at the foot of the window.
+--- It ALWAYS occupies exactly one line, whether or not there is anything to
+--- say: a line that comes and goes reflows everything above it, so the whole
+--- window used to jump down and back each time a message timed out. `y` is the
+--- content position reserved for it; the line is pushed there only when the
+--- content above fell short, so it cannot overlap an overflowing layout.
+local function status_line(y)
+  if ImGui.GetCursorPosY(ctx) < y then ImGui.SetCursorPosY(ctx, y) end
   local toast = app.current_toast()
   if toast then
     ImGui.TextColored(ctx, rgba(COL_OK), toast)
+  else
+    ImGui.Text(ctx, '')
   end
 end
 
@@ -301,6 +313,13 @@ function M.draw(FS)
   banners(FS)
 
   local availw, availh = ImGui.GetContentRegionAvail(ctx)
+
+  -- Carve the status line off the bottom before anything else is measured, so
+  -- the space is held for it whether or not a message is showing.
+  local statush = ImGui.GetTextLineHeightWithSpacing(ctx)
+  local statusy = ImGui.GetCursorPosY(ctx) + availh - statush
+  availh = availh - statush
+
   local bottom = math.min(math.max(FS * 13, availh * 0.35), availh * 0.6)
   local barh   = ImGui.GetFrameHeight(ctx) + FS * 0.9   -- the action bar below
   local tableh = availh - bottom - barh - FS * 3.2      -- and the tab strip
@@ -341,6 +360,8 @@ function M.draw(FS)
   preview.draw_list(FS, leftw, bottom)
   ImGui.SameLine(ctx)
   preview.draw_tester(FS, availw - leftw - FS, bottom)
+
+  status_line(statusy)
 
   if dimmed then theme.pop_content_dim() end
 
