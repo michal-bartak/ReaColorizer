@@ -100,24 +100,24 @@ Each rule has a colour, and optionally a **second** colour. With a second
 colour, the objects that rule wins are spread evenly along a gradient in HSL, in
 project order, separately per kind.
 
-**Where a gradient starts over** is set per rule, in the box beside the second
+**What a gradient spreads across** is set per rule, in the box beside the second
 colour:
 
-| setting | a new gradient begins… |
+| spread across | meaning |
 |---|---|
-| whole rule | never — one ramp across every match in the project |
-| **after a gap** (default) | at the first object this rule does not win |
-| at each folder | inside each folder |
-| gap or folder | at whichever comes first |
+| all matches | one ramp across every match in the project |
+| **runs** (default) | a run is an unbroken stretch this rule wins; anything it does not win ends one |
+| folders | one ramp inside each folder |
+| runs & folders | a new ramp at a gap or a folder edge, whichever comes first |
 
 So with `String*` matching either of these, each block gets its own full ramp:
 
 ```
-String1, String2, String3      <- "after a gap": the Bus below ends this group
+String1, String2, String3      <- "runs": the Bus below ends this one
 Bus
 String11, String12, String13
 
-String1(parent), String2, String3       <- "at each folder"
+String1(parent), String2, String3       <- "folders"
 String11(parent), String12, String13
 ```
 

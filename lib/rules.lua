@@ -36,26 +36,28 @@ M.MODES = { 'substring', 'glob', 'regex' }
 -- How far a gradient spreads before it starts over.
 M.GRADIENT_SCOPES = { 'all', 'run', 'folder', 'both' }
 
+-- All four read as answers to "spread the gradient across:".
 M.GRADIENT_LABEL = {
-  all    = 'whole rule',
-  run    = 'after a gap',
-  folder = 'at each folder',
-  both   = 'gap or folder',
+  all    = 'all matches',
+  run    = 'runs',
+  folder = 'folders',
+  both   = 'runs & folders',
 }
 
 -- what the combo shows when closed; the full labels are in the dropdown
 M.GRADIENT_SHORT = {
   all    = 'all',
-  run    = 'gap',
-  folder = 'folder',
+  run    = 'runs',
+  folder = 'folders',
   both   = 'both',
 }
 
 M.GRADIENT_HELP = {
-  all    = 'One gradient across every match in the project.',
-  run    = 'A new gradient after any object this rule does not win.',
-  folder = 'A new gradient inside each folder.',
-  both   = 'A new gradient at a gap or a folder edge, whichever comes first.',
+  all    = 'One ramp across every match in the project.',
+  run    = 'A run is an unbroken stretch this rule wins. Anything it does not ' ..
+           'win ends one and starts the next.',
+  folder = 'One ramp inside each folder.',
+  both   = 'A new ramp at a gap or a folder edge, whichever comes first.',
 }
 
 local MODE_SET = {}

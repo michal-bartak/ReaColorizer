@@ -87,7 +87,7 @@ if r then
   local g = grad[idx]
   if g then
     w('  gradient      : step %d of %d', g.rank, g.size)
-    w('                  starts over: %s',
+    w('                  spread across: %s',
       require('rules').GRADIENT_LABEL[r.gradient_scope] or '?')
     if g.size == 1 then
       w('                  NOTE: alone in its group, so it gets the first')

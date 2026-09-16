@@ -145,7 +145,7 @@ function M.draw_list(FS, w, h)
         if ImGui.IsItemHovered(ctx) and p.rule.color2 then
           ImGui.SetTooltip(ctx, 'This rule spreads a gradient across its matches,\n' ..
                                 'so each one gets a different shade.\n\n' ..
-                                'Starts over: ' ..
+                                'Spread across: ' ..
                                 (rulesmod.GRADIENT_LABEL[p.rule.gradient_scope] or '?'))
         end
         if ImGui.IsItemClicked(ctx) then st.sel_id = p.rule.id end

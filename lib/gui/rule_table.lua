@@ -73,8 +73,8 @@ local function only_combo(r, kind)
   return changed
 end
 
---- Where a gradient restarts. Only shown once a second colour exists -- the
---- setting means nothing without one.
+--- What the gradient spreads across. Only shown once a second colour exists --
+--- the setting means nothing without one.
 local function gradient_scope_combo(r, kind, FS)
   local changed = false
   ImGui.SetNextItemWidth(ctx, FS * 5.2)
@@ -93,8 +93,8 @@ local function gradient_scope_combo(r, kind, FS)
     ImGui.EndCombo(ctx)
   end
   if ImGui.IsItemHovered(ctx) then
-    ImGui.SetTooltip(ctx, 'Where the gradient starts over:\n' ..
-                          rulesmod.GRADIENT_LABEL[r.gradient_scope] .. ' -- ' ..
+    ImGui.SetTooltip(ctx, 'Spread the gradient across: ' ..
+                          rulesmod.GRADIENT_LABEL[r.gradient_scope] .. '\n\n' ..
                           rulesmod.GRADIENT_HELP[r.gradient_scope])
   end
   return changed
@@ -114,7 +114,7 @@ local function color_cell(r, kind, FS)
     if ImGui.IsItemHovered(ctx) then
       ImGui.SetTooltip(ctx, 'Second colour: this rule\'s matches are spread\n' ..
                             'along a gradient between the two, in project order.\n' ..
-                            'The box beside it says where the gradient starts over.')
+                            'The box beside it says what it spreads across.')
     end
     theme.same_line_tight()
     if theme.icon_button('x##nograd') then
