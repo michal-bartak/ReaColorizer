@@ -385,19 +385,6 @@ end
 --- The open tab's colour. Anything meant to read as attached to the tab strip
 --- takes its colour from here rather than from a constant, so it follows
 --- whatever theme ReaImGui is running.
--- TEMPORARY probe: where exactly do the tab strip and the table land?
-M.PROBE = nil            -- set to {} by window.draw while measuring
-function M.probe_point(label, kind)
-  if not M.PROBE then return end
-  local cx, cy = ImGui.GetCursorScreenPos(ctx)
-  local e = { label = label, cx = cx, cy = cy }
-  if kind == 'item' then
-    e.x0, e.y0 = ImGui.GetItemRectMin(ctx)
-    e.x1, e.y1 = ImGui.GetItemRectMax(ctx)
-  end
-  M.PROBE[#M.PROBE + 1] = e
-end
-
 function M.tab_selected_color()
   return ImGui.GetStyleColor(ctx, ImGui.Col_TabSelected)
 end

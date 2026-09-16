@@ -686,6 +686,12 @@ do
         events[#events + 1] = 'headerbg:' .. tostring(col)
       end
     end,
+    Indent     = function() events[#events + 1] = 'indent' end,
+    Unindent   = function() events[#events + 1] = 'unindent' end,
+    BeginTable = function(_, name)
+      if name:find('^rules_') then events[#events + 1] = 'table' end
+      return true
+    end,
   } }
   window.init(ImGui, { 'ctx' }); theme.init(ImGui, { 'ctx' })
   P.advance(1); app.recompute_preview()
@@ -707,6 +713,23 @@ do
 
   check(seen.headerbg ~= nil,
         'the header row is repainted in the open tab colour', tostring(seen.headerbg))
+
+  -- The inset shifts the tab STRIP onto the table's header fill. A tab item's
+  -- contents are drawn inside the indent, so leaving it on shifted every cell
+  -- and cost the table a pixel of width -- enough to clip the buttons in the
+  -- columns sized tight to their contents. Every Indent must be matched before
+  -- the table is drawn.
+  local depth, max_depth_at_table = 0, nil
+  for _, e in ipairs(events) do
+    if     e == 'indent'   then depth = depth + 1
+    elseif e == 'unindent' then depth = depth - 1
+    elseif e == 'table'    then max_depth_at_table = math.max(max_depth_at_table or 0, depth)
+    end
+  end
+  check(depth == 0, 'indent and unindent are balanced over the frame', tostring(depth))
+  check(max_depth_at_table == 0,
+        'and the table is drawn outside the tab strip inset',
+        'depth ' .. tostring(max_depth_at_table))
 end
 
 --------------------------- the gap closes to the PAINTED tab edge, not the bar
