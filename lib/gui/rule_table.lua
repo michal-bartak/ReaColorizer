@@ -179,8 +179,10 @@ function M.draw(kind, FS, height)
   local ICON = theme.icon_size()
   local cpx  = ImGui.GetStyleVar(ctx, ImGui.StyleVar_CellPadding)
   local PAD  = 2 * cpx
-  -- swatch, swatch, [x], dropdown -- and the three gaps between them
-  local COLOUR_W = ICON * 3 + theme.SWATCH_GAP * 3 + gscope_width(FS) + PAD + 2
+  -- swatch, swatch, [x], dropdown -- and the three gaps between them, less one
+  -- button's width: the computed figure left the column visibly loose, so the
+  -- cell runs a button tighter than its widest possible content.
+  local COLOUR_W = ICON * 2 + theme.SWATCH_GAP * 3 + gscope_width(FS) + PAD + 2
   local MENU_W   = ICON + PAD + 4
   ImGui.TableSetupColumn(ctx, '##drag', FIX, FS * 1.4)
   ImGui.TableSetupColumn(ctx, '##on',   FIX, FS * 1.8)
