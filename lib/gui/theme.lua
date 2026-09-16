@@ -140,9 +140,27 @@ end
 --- Tabs get roomier padding than everything else, and there is no separate
 --- style var for them -- they use FramePadding at BeginTabItem time. So it is
 --- pushed around the tab strip and lifted again for each tab's contents.
+--- Round to a whole logical pixel.
+---
+--- A tab's width is CalcTextSize(label).x + FramePadding.x * 2, and ImGui
+--- truncates each tab's LEFT edge to an integer without truncating its width:
+---
+---   window->DC.CursorPos = bar.Min + ImVec2(IM_TRUNC(tab->Offset - ...), 0)
+---
+--- So a fractional padding leaves every right edge mid-pixel while the next
+--- left edge snaps, and the visible gap drifts with the accumulated fraction.
+--- Measured at font size 14 with TAB_PAD_X = 1.10 (padding 15.4): gaps of
+--- 3.20, 4.20, 4.20 against an ItemInnerSpacing of 4 -- a whole logical pixel
+--- of difference, which is two device pixels on a Retina display and plainly
+--- visible.
+---
+--- The glyph widths were all whole numbers (69, 54, 73, 70), so the padding was
+--- the only fractional term and rounding it makes every gap exactly 4.00.
+local function px(v) return math.floor(v + 0.5) end
+
 function M.push_tab_padding(FS)
   ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding,
-                     FS * M.TAB_PAD_X, FS * M.TAB_PAD_Y)
+                     px(FS * M.TAB_PAD_X), px(FS * M.TAB_PAD_Y))
 end
 
 function M.pop_tab_padding()

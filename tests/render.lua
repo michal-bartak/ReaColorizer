@@ -665,6 +665,31 @@ do
         string.format('%s of %d', tostring(last_msg), #loud_texts))
 end
 
+--------------------------------------- tabs sit on whole-pixel boundaries
+do
+  -- ImGui truncates a tab's left edge to an integer but not its width, so a
+  -- fractional FramePadding makes the gaps between tabs drift. Measured in
+  -- REAPER at font size 14 before this was rounded: 3.20 / 4.20 / 4.20 against
+  -- an ItemInnerSpacing of 4. See theme.push_tab_padding.
+  local got
+  local ImGui = mockimgui.new{ scripted = {
+    PushStyleVar = function(_, _, a, b) got = { a, b } end,
+  } }
+  theme.init(ImGui, { 'ctx' })
+
+  for _, fs in ipairs({ 12, 13.7, 14, 17.5 }) do
+    theme.push_tab_padding(fs)
+    check(got[1] % 1 == 0 and got[2] % 1 == 0,
+          'tab padding is whole pixels at font size ' .. fs,
+          string.format('%s, %s', tostring(got[1]), tostring(got[2])))
+  end
+
+  -- and the tab width it produces stays whole for a whole-width label
+  theme.push_tab_padding(14)
+  check((69 + got[1] * 2) % 1 == 0,
+        'so a tab width comes out whole too', tostring(69 + got[1] * 2))
+end
+
 ------------------------------------------------------- section headings
 do
   local drawn, size, seps
