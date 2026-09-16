@@ -187,11 +187,23 @@ Each of these was silent, and each now has a test named after its failure mode.
    first fix cleared the flag but not `applied`, so the next sweep undid it.
 6. **`clear_unmatched` became a table** and `WhyThisColour` reported it with
    `x and 'ON' or 'OFF'` — a table is always truthy, so it always said ON.
-7. **Editing a rule did nothing while the background loop was running.** The
-   config-change branch cleared the cache but left the project-change counter
-   alone, so the idle gate returned immediately and no sweep happened until the
-   project changed for some unrelated reason. The test that should have caught
-   it was bumping the project itself.
+7. **The test harness was silently dependent on the current directory** — it
+   found the mocks through Lua's default `./?.lua`, so it only worked when
+   invoked from inside `tests/`.
+
+## Editing rules does not repaint the project
+
+Changing a rule's colour, pattern or options does **not** re-apply on its own,
+even with the background loop running. Apply Now is the commit; the preview
+shows what would happen in the meantime. This matches how every other edit in
+the window behaves, so there is one rule to learn rather than two.
+
+The loop's job is keeping the project in step with the *saved* rules as objects
+change — not repainting while someone is still typing a pattern.
+
+A rule change does clear the loop's cache, so the next sweep re-evaluates
+everything against the new rules. That is what stops a partly-applied project:
+you never get some objects on the old rules and some on the new.
 
 ## Manual colours and rule ownership
 

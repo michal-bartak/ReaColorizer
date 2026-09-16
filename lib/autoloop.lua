@@ -173,11 +173,12 @@ function M.tick()
     S.cfg  = config.load()
     S.cache, S.cold = {}, nil
     require('matcher').clear_cache()
-    -- Force a sweep. New rules are a reason to re-apply in their own right, and
-    -- without this the idle gate below sees an unchanged project change count
-    -- and returns immediately -- so an edit in the window did nothing until the
-    -- project happened to change for some other reason.
-    S.last_scc, S.prev_scc = nil, nil
+    -- Deliberately NOT forcing a sweep here. Editing rules is authoring; Apply
+    -- Now is its commit. The loop exists to keep the project in step with the
+    -- SAVED rules as objects change, not to repaint the project while someone
+    -- is still typing a pattern. Clearing the cache above means the next sweep
+    -- -- whenever the project next changes -- re-evaluates everything against
+    -- the new rules, so this never leaves a half-applied project.
   end
 
   -- An Apply Now, from the window or the action, means "rules decide again".
