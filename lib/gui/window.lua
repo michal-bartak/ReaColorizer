@@ -347,8 +347,10 @@ function M.draw(FS)
   -- The table draws an outer border, so its header FILL starts one pixel in.
   -- Without this the first tab overhangs the table by that pixel.
   ImGui.Indent(ctx, theme.TAB_INSET)
-  -- Suppress ImGui's own tab-bar separator; theme.tab_shelf draws one that is
-  -- exactly as wide as the table instead of overhanging it.
+  -- Suppress ImGui's own tab-bar separator. It widens itself past the bar on
+  -- both sides -- BarRect.Min.x - IM_TRUNC(WindowPadding.x * 0.5), and the
+  -- same on the right -- so it overhung both the tabs and the table. The
+  -- table's tab-coloured header row is the shelf instead.
   --
   -- This goes on the stack BEFORE the tab padding, not after. PushStyleVar is
   -- LIFO, and the tab's contents pop the padding back off to draw the table --
@@ -373,11 +375,11 @@ function M.draw(FS)
         ImGui.Unindent(ctx, theme.TAB_INSET)
         st.active_kind = kind
 
-        -- The table joins the open tab: no gap, and a shelf line the same
-        -- width as the table. The header row below picks up the tab's colour
-        -- (theme.headers_row), so the two read as one surface.
+        -- The table joins the open tab: no gap, and the header row below picks
+        -- up the tab's colour (theme.headers_row), so the two read as one
+        -- surface. The header IS the shelf -- it is full width and the right
+        -- colour -- so nothing extra is drawn between them.
         theme.close_tab_gap(FS, ty1 - ty0)
-        theme.tab_shelf()
 
         ruletbl.draw(kind, FS, math.max(tableh, FS * 6))
 

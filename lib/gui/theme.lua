@@ -389,27 +389,6 @@ function M.tab_selected_color()
   return ImGui.GetStyleColor(ctx, ImGui.Col_TabSelected)
 end
 
---- The shelf the tab strip sits on, drawn by hand.
----
---- ImGui draws its own, but widens it past the tab bar on BOTH sides:
----
----   separator_min_x = BarRect.Min.x - IM_TRUNC(WindowPadding.x * 0.5)
----   separator_max_x = BarRect.Max.x + IM_TRUNC(WindowPadding.x * 0.5)
----
---- With the default padding of 8 that is 4px of line hanging past the tabs and
---- past the table below them. StyleVar_TabBarBorderSize = 0 suppresses it (the
---- draw is guarded on that being > 0) and this puts one back at exactly the
---- content width, so the strip and the table share an edge.
----
---- Call it where the tab's content starts, with the cursor already pulled up
---- against the bar.
-function M.tab_shelf()
-  local x, y = ImGui.GetCursorScreenPos(ctx)
-  local w    = ImGui.GetContentRegionAvail(ctx)
-  ImGui.DrawList_AddRectFilled(ImGui.GetWindowDrawList(ctx),
-                               x, y - 1, x + w, y, M.tab_selected_color())
-end
-
 --- The height a tab is actually PAINTED: font size plus its own padding, top
 --- and bottom. ImGui's tab bar reserves more room than this -- measured 31
 --- against a painted 28 -- for its overline and border, and the cursor lands
