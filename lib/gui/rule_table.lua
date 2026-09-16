@@ -73,11 +73,15 @@ local function only_combo(r, kind)
   return changed
 end
 
+--- Width of the gradient-spread dropdown. Shared with the Colour column, which
+--- is sized to hold exactly the swatches, the [x] button and this box.
+local function gscope_width(FS) return FS * 5.2 + 12 end
+
 --- What the gradient spreads across. Only shown once a second colour exists --
 --- the setting means nothing without one.
 local function gradient_scope_combo(r, kind, FS)
   local changed = false
-  ImGui.SetNextItemWidth(ctx, FS * 5.2)
+  ImGui.SetNextItemWidth(ctx, gscope_width(FS))
   if ImGui.BeginCombo(ctx, '##gscope', rulesmod.GRADIENT_SHORT[r.gradient_scope]) then
     for _, g in ipairs(rulesmod.GRADIENT_SCOPES) do
       if rulesmod.gradient_scope_applies(g, kind) then
@@ -168,6 +172,16 @@ function M.draw(kind, FS, height)
   end
 
   local FIX, STRETCH = ImGui.TableColumnFlags_WidthFixed, ImGui.TableColumnFlags_WidthStretch
+
+  -- Two columns hold nothing but square buttons, so size them from the buttons
+  -- instead of from a guess in font sizes. A table cell insets its contents by
+  -- CellPadding.x on each side, which the column width has to carry.
+  local ICON = theme.icon_size()
+  local cpx  = ImGui.GetStyleVar(ctx, ImGui.StyleVar_CellPadding)
+  local PAD  = 2 * cpx
+  -- swatch, swatch, [x], dropdown -- and the three gaps between them
+  local COLOUR_W = ICON * 3 + theme.SWATCH_GAP * 3 + gscope_width(FS) + PAD + 2
+  local MENU_W   = ICON + PAD + 4
   ImGui.TableSetupColumn(ctx, '##drag', FIX, FS * 1.4)
   ImGui.TableSetupColumn(ctx, '##on',   FIX, FS * 1.8)
   ImGui.TableSetupColumn(ctx, 'Name',   STRETCH, 1.0)
@@ -175,10 +189,10 @@ function M.draw(kind, FS, height)
   ImGui.TableSetupColumn(ctx, 'Pattern', STRETCH, 2.0)
   ImGui.TableSetupColumn(ctx, 'Aa',     FIX, FS * 2.2)
   if has_only then ImGui.TableSetupColumn(ctx, 'Filter', FIX, FS * 9 + 4) end
-  ImGui.TableSetupColumn(ctx, 'Colour', FIX, FS * 12.5)
+  ImGui.TableSetupColumn(ctx, 'Colour', FIX, COLOUR_W)
   if is_track then ImGui.TableSetupColumn(ctx, 'Items', FIX, FS * 3.2) end
   ImGui.TableSetupColumn(ctx, 'Hits',   FIX, FS * 4)
-  ImGui.TableSetupColumn(ctx, '##menu', FIX, FS * 2.6)
+  ImGui.TableSetupColumn(ctx, '##menu', FIX, MENU_W)
   ImGui.TableSetupScrollFreeze(ctx, 0, 1)
 
   -- Aa / Items / Hits are narrow columns whose contents are centred, so their
