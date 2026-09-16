@@ -709,6 +709,38 @@ do
         'the header row is repainted in the open tab colour', tostring(seen.headerbg))
 end
 
+--------------------------- the gap closes to the PAINTED tab edge, not the bar
+do
+  -- Measured in REAPER: a tab's item rect was 31 tall while the tab is painted
+  -- FontSize + 2*padding = 28. ImGui reserves the other 3px below the tab
+  -- shapes for its overline and border, and the cursor lands below THAT. A
+  -- pull-up of only ItemSpacing left those 3px of window background showing
+  -- between the strip and the table, which is the join failing.
+  local moved
+  local ImGui = mockimgui.new{ scripted = {
+    GetCursorPosY = function() return 1000 end,
+    GetStyleVar   = function() return 8, 4 end,       -- ItemSpacing 8, 4
+    SetCursorPosY = function(_, y) moved = y end,
+  } }
+  theme.init(ImGui, { 'ctx' })
+
+  local painted = theme.tab_paint_height(14)
+  check(painted == 14 + 2 * math.floor(14 * theme.TAB_PAD_Y + 0.5),
+        'a tab is painted font size plus its own padding', tostring(painted))
+
+  theme.close_tab_gap(14, painted + 3)
+  check(moved == 1000 - 4 - 3, 'the spacing AND the reserved strip are closed',
+        tostring(moved))
+
+  theme.close_tab_gap(14, painted)
+  check(moved == 1000 - 4, 'nothing extra is taken when none is reserved',
+        tostring(moved))
+
+  theme.close_tab_gap(14, painted - 5)
+  check(moved == 1000 - 4, 'and a shorter rect never pushes the table DOWN',
+        tostring(moved))
+end
+
 --------------------------------------- tabs sit on whole-pixel boundaries
 do
   -- ImGui truncates a tab's left edge to an integer but not its width, so a

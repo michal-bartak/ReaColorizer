@@ -66,6 +66,9 @@ M.TABLE_OUTER     = true   -- the border around the whole table
 
 M.HEADER_FOLLOWS_TAB = true  -- paint the table's header row in the open tab's
                              -- colour, so tab and table read as one surface
+M.TAB_INSET       = 1      -- logical px the tab strip is shifted right, to sit
+                           -- on the table's header FILL rather than on its
+                           -- outer border one pixel further left
 
 M.HANDLE_ALPHA          = 0.50   -- the reorder grip, at rest
 M.HANDLE_ALPHA_HOVER    = 0.70
@@ -420,11 +423,27 @@ function M.tab_shelf()
                                x, y - 1, x + w, y, M.tab_selected_color())
 end
 
---- Butt the next item up against the tab strip. ImGui leaves an ItemSpacing
---- gap there, which breaks the join between the open tab and the table.
-function M.close_tab_gap()
+--- The height a tab is actually PAINTED: font size plus its own padding, top
+--- and bottom. ImGui's tab bar reserves more room than this -- measured 31
+--- against a painted 28 -- for its overline and border, and the cursor lands
+--- below the reserved edge, not the painted one.
+function M.tab_paint_height(FS)
+  return FS + 2 * px(FS * M.TAB_PAD_Y)
+end
+
+--- Butt the next item up against the PAINTED bottom of the tab strip.
+---
+--- Two things sit in the way. ImGui leaves an ItemSpacing gap after the bar,
+--- and the bar rect is taller than the tabs drawn in it. Closing only the
+--- first left about 2px of window background showing through, which is what
+--- broke the join.
+---
+--- @param tab_h  the tab item's measured height, from GetItemRectMin/Max
+function M.close_tab_gap(FS, tab_h)
   local _, sy = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
-  ImGui.SetCursorPosY(ctx, ImGui.GetCursorPosY(ctx) - sy)
+  local reserved = 0
+  if tab_h then reserved = math.max(0, tab_h - M.tab_paint_height(FS)) end
+  ImGui.SetCursorPosY(ctx, ImGui.GetCursorPosY(ctx) - sy - reserved)
 end
 
 function M.headers_row(ncolumns, centred)

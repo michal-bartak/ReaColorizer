@@ -379,6 +379,9 @@ function M.draw(FS)
   -- One ordered list per object kind. Precedence is per-kind, so reordering
   -- your track rules cannot change which region wins.
   local probing = probe_begin()
+  -- The table draws an outer border, so its header FILL starts one pixel in.
+  -- Without this the first tab overhangs the table by that pixel.
+  ImGui.Indent(ctx, theme.TAB_INSET)
   theme.push_tab_padding(FS)
   -- Suppress ImGui's own tab-bar separator; theme.tab_shelf draws one that is
   -- exactly as wide as the table instead of overhanging it.
@@ -389,6 +392,8 @@ function M.draw(FS)
       local label = string.format('%s%s###%s', rulesmod.KIND_LABEL[kind],
                                   total > 0 and (' (' .. total .. ')') or '', kind)
       local opened = ImGui.BeginTabItem(ctx, label)
+      local _, ty0 = ImGui.GetItemRectMin(ctx)
+      local _, ty1 = ImGui.GetItemRectMax(ctx)
       theme.probe_point('tab: ' .. label:match('^[^#]*'), 'item')
       if opened then
         theme.pop_tab_padding()          -- contents use ordinary padding
@@ -399,7 +404,7 @@ function M.draw(FS)
         -- The table joins the open tab: no gap, and a shelf line the same
         -- width as the table. The header row below picks up the tab's colour
         -- (theme.headers_row), so the two read as one surface.
-        theme.close_tab_gap()
+        theme.close_tab_gap(FS, ty1 - ty0)
         theme.probe_point('after close_tab_gap (shelf drawn here)')
         theme.tab_shelf()
 
@@ -423,6 +428,7 @@ function M.draw(FS)
   end
   ImGui.PopStyleVar(ctx)               -- TabBarBorderSize
   theme.pop_tab_padding()
+  ImGui.Unindent(ctx, theme.TAB_INSET)
   if probing then probe_report() end
 
   ImGui.Spacing(ctx)
