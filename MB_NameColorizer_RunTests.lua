@@ -1127,6 +1127,37 @@ do -- items: a change of track ends the run
   check(m['a3'] == RED and m['a4'] == BLU, 'and so does the second, separately')
 end
 
+do -- items: 'all' still means "all on this track", not all in the project
+  -- Without this the two tracks below share one four-step ramp, so neither
+  -- gets the full range and the colours depend on how many OTHER tracks happen
+  -- to hold matching items.
+  local rs = ruleset{ item = { grad_rule{ mode = 'substring', pattern = 'a',
+                                          gradient_scope = 'all' } } }
+  local m = planmap({ tr('T1'), tr('T2'),
+                      item('a1', { on = 'T1' }), item('a2', { on = 'T1' }),
+                      item('a3', { on = 'T2' }), item('a4', { on = 'T2' }) }, rs,
+                    { propagate_folders = 'off' })
+  check(m['a1'] == RED and m['a2'] == BLU, 'the first track ramps fully')
+  check(m['a3'] == RED and m['a4'] == BLU, 'and the second gets its own ramp')
+end
+
+do -- and the ramp does not depend on what other tracks hold
+  local rs = ruleset{ item = { grad_rule{ mode = 'substring', pattern = 'a',
+                                          gradient_scope = 'all' } } }
+  local alone = planmap({ tr('T1'), item('a1', { on = 'T1' }),
+                                    item('a2', { on = 'T1' }) }, rs,
+                        { propagate_folders = 'off' })
+  local crowd = planmap({ tr('T1'), tr('T2'),
+                          item('a1', { on = 'T1' }), item('a2', { on = 'T1' }),
+                          item('a3', { on = 'T2' }) }, rs,
+                        { propagate_folders = 'off' })
+  check(alone['a1'] == crowd['a1'] and alone['a2'] == crowd['a2'],
+        'T1 colours the same either way',
+        string.format('%06X/%06X vs %06X/%06X', alone['a1'], alone['a2'],
+                      crowd['a1'], crowd['a2']))
+  check(crowd['a3'] == RED, 'and a lone match elsewhere gets colour 1')
+end
+
 do -- scope is coerced to what each kind can actually use
   check(RU.new('track', { gradient_scope = 'folder' }).gradient_scope == 'folder',
         'tracks keep folder scope')

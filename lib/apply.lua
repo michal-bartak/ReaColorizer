@@ -153,6 +153,21 @@ function M.plan(entries, rules, options)
   local last_rule, last_track, last_fold = {}, {}, {}
   local run_seq, both_seq = {}, {}
   local nrun, nboth = 0, 0
+
+  -- An item gradient is confined to one track, whatever the scope. 'run'
+  -- already breaks at a track boundary; 'all' otherwise ramps across every
+  -- match in the PROJECT, so two tracks each holding matching items share one
+  -- ramp and neither gets the full range. Items on different tracks are not a
+  -- sequence anyone reads in order, so there is nothing for a ramp to express
+  -- between them. Track ordinals are negative to stay clear of run_seq, which
+  -- counts up from 1.
+  local track_ord, nord = {}, 0
+  local function item_group(guid)
+    if guid == nil then return 0 end       -- an item with no track to belong to
+    local t = track_ord[guid]
+    if not t then nord = nord + 1; t = -nord; track_ord[guid] = t end
+    return t
+  end
   local matched, scanned = 0, 0
 
   for i = 1, #entries do
@@ -191,7 +206,8 @@ function M.plan(entries, rules, options)
       local g = 0
       if     scope == 'run'    then g = run_seq[k]
       elseif scope == 'folder' then g = fold
-      elseif scope == 'both'   then g = both_seq[k] end
+      elseif scope == 'both'   then g = both_seq[k]
+      elseif k == 'item'       then g = item_group(e.track_guid) end
       gid[i] = g
 
       local gg = groups[r.id]

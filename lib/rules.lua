@@ -53,7 +53,9 @@ M.GRADIENT_SHORT = {
 }
 
 M.GRADIENT_HELP = {
-  all    = 'One ramp across every match in the project.',
+  all    = 'One ramp across every match in the project. Item gradients are\n' ..
+           'always confined to a track, so for items this is every match\n' ..
+           'on the track.',
   run    = 'A run is an unbroken stretch this rule wins. Anything it does not ' ..
            'win ends one and starts the next -- as does a visual spacer in ' ..
            'the track panel.',
