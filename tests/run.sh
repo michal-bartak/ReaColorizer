@@ -13,6 +13,10 @@ TESTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export NC="$(dirname "$TESTS")"
 export SP="$TESTS/.tmp"
 
+# Find the mocks regardless of where this was invoked from. Without it the
+# suites only worked when the current directory happened to be tests/.
+export LUA_PATH="$TESTS/?.lua;;"
+
 mkdir -p "$SP/cfgtest"
 rc=0
 

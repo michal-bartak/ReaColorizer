@@ -187,3 +187,24 @@ Each of these was silent, and each now has a test named after its failure mode.
    first fix cleared the flag but not `applied`, so the next sweep undid it.
 6. **`clear_unmatched` became a table** and `WhyThisColour` reported it with
    `x and 'ON' or 'OFF'` — a table is always truthy, so it always said ON.
+7. **Editing a rule did nothing while the background loop was running.** The
+   config-change branch cleared the cache but left the project-change counter
+   alone, so the idle gate returned immediately and no sweep happened until the
+   project changed for some unrelated reason. The test that should have caught
+   it was bumping the project itself.
+
+## Manual colours and rule ownership
+
+With *reset when unmatched* on for a kind, the rules own that kind: a colour set
+by hand on an unmatched object is removed on the next sweep. That is deliberate
+— it is what makes "items always follow their track" a guarantee rather than a
+tendency. Turn the option off for that kind to keep manual colours, and use
+Clear for one-off resets.
+
+One asymmetry is worth knowing. The background loop's override rule ("do not
+fight a colour the user picked") applies to objects a rule *matches*, so
+hand-colouring a matched item survives until it is renamed or Apply Now is
+pressed. It does not apply to unmatched objects under *reset when unmatched*,
+because the loop records "we wrote nothing" rather than "we wrote default", so
+there is no baseline to compare a later manual change against. Apply Now
+overrules in both cases.

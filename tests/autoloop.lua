@@ -88,9 +88,12 @@ do
   local c = config.load()
   c.rules.track[2].color = 0x00FF00
   assert(config.save(c))                      -- bumps config_rev
-  P.bump()
+  -- deliberately NO P.bump() here: a rule change must trigger a sweep on its
+  -- own. It used to clear the cache but leave the project-change counter
+  -- alone, so the idle gate returned immediately and an edit in the window
+  -- did nothing until the project happened to change for another reason.
   ticks(3)
-  check(tcol(newtr) == 0x00FF00, 'editing a rule re-colours on the next tick',
+  check(tcol(newtr) == 0x00FF00, 'editing a rule re-colours without any project change',
         tostring(tcol(newtr)))
 end
 

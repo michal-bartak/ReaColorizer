@@ -173,6 +173,11 @@ function M.tick()
     S.cfg  = config.load()
     S.cache, S.cold = {}, nil
     require('matcher').clear_cache()
+    -- Force a sweep. New rules are a reason to re-apply in their own right, and
+    -- without this the idle gate below sees an unchanged project change count
+    -- and returns immediately -- so an edit in the window did nothing until the
+    -- project happened to change for some other reason.
+    S.last_scc, S.prev_scc = nil, nil
   end
 
   -- An Apply Now, from the window or the action, means "rules decide again".
