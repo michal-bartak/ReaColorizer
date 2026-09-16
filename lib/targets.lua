@@ -27,6 +27,18 @@ local colors = require 'colors'
 
 local M = {}
 
+-- Read by marker selection, marker clearing and the marker writes, all of
+-- which sit in different sections of this file -- so it lives up here.
+local HAS_MODERN_MARKER_API = nil
+local function modern_marker_api()
+  if HAS_MODERN_MARKER_API == nil then
+    HAS_MODERN_MARKER_API = reaper.APIExists('GetRegionOrMarker')
+                        and reaper.APIExists('SetRegionOrMarkerInfo_Value')
+  end
+  return HAS_MODERN_MARKER_API
+end
+
+
 local floor = math.floor
 
 ------------------------------------------------------------------- tracks
@@ -54,25 +66,49 @@ local floor = math.floor
 --- context goes stale. The probe caught a run reading "items" with zero items
 --- selected, which would otherwise have coloured nothing at all.
 ---
---- @return 'tracks'|'items'|'both'|nil, n_tracks, n_items
+--- Markers and regions are a separate axis and are always honoured when
+--- selected: the cursor context has no value for them (0/1/2 are track panels,
+--- items and envelopes), so there is nothing to arbitrate with. A marker
+--- selection left over from earlier cannot be told from a deliberate one.
+---
+--- How many markers/regions are selected. There is no CountSelectedMarkers,
+--- so this enumerates; it runs on a button press, never in the auto loop.
+function M.count_selected_markers(proj)
+  if not modern_marker_api() then return 0 end      -- unknowable on old builds
+  local n, i = 0, 0
+  while true do
+    local rv = reaper.EnumProjectMarkers3(proj, i)
+    if rv == 0 then break end
+    local ok, sel = pcall(function()
+      local mk = reaper.GetRegionOrMarker(proj, i, '')
+      return mk ~= nil and reaper.GetRegionOrMarkerInfo_Value(proj, mk, 'B_UISEL') ~= 0
+    end)
+    if ok and sel then n = n + 1 end
+    i = i + 1
+  end
+  return n
+end
+
+--- @return 'tracks'|'items'|'both'|nil, n_tracks, n_items, n_markers
 function M.selection_focus(proj)
   local ntr = reaper.CountSelectedTracks(proj)
   local nit = reaper.CountSelectedMediaItems(proj)
+  local nmk = M.count_selected_markers(proj)
 
-  if ntr == 0 and nit == 0 then return nil,     ntr, nit end
-  if nit == 0              then return 'tracks', ntr, nit end
-  if ntr == 0              then return 'items',  ntr, nit end
+  if ntr == 0 and nit == 0 then return nil,     ntr, nit, nmk end
+  if nit == 0              then return 'tracks', ntr, nit, nmk end
+  if ntr == 0              then return 'items',  ntr, nit, nmk end
 
   local c
   if reaper.APIExists('GetCursorContext2') then
     c = reaper.GetCursorContext2(true)
   end
-  if c == 1 then return 'items',  ntr, nit end
-  if c == 0 then return 'tracks', ntr, nit end
+  if c == 1 then return 'items',  ntr, nit, nmk end
+  if c == 0 then return 'tracks', ntr, nit, nmk end
 
   -- Envelopes, or no answer at all: honour both, which is what this did before
   -- the context was consulted. Guessing is worse than doing as you are told.
-  return 'both', ntr, nit
+  return 'both', ntr, nit, nmk
 end
 
 --- @param opts.tracks_as_context  every track is context, so nothing is written
@@ -179,13 +215,45 @@ end
 
 --------------------------------------------------------- markers & regions
 --- Both markers and regions, in project order. `kind` distinguishes them.
-function M.markers(proj)
+---
+--- Under `selected_only` the unselected ones come back flagged `context`
+--- rather than being left out, exactly as tracks do: a gradient grouped into
+--- runs needs its neighbours, so dropping them would give a selected region a
+--- different colour from the one Apply All gives it.
+---
+--- Selection comes from B_UISEL ("selected in arrange view"), read through
+--- GetRegionOrMarkerInfo_Value. Verified against the REAPER binary's own API
+--- table rather than assumed -- there is no IsMarkerSelected, and this is the
+--- only exposure of the state.
+function M.markers(proj, opts)
+  opts = opts or {}
   local list = {}
+
+  -- A build too old for the modern marker API cannot report selection at all.
+  -- Flag everything as context there: colouring the lot would be worse than
+  -- colouring none, and that build cannot clear marker colours either.
+  local sel_known = opts.selected_only and modern_marker_api()
+  local blind     = opts.selected_only and not sel_known
+
   local i = 0
   while true do
     local rv, isrgn, pos, rgnend, name, idx, color = reaper.EnumProjectMarkers3(proj, i)
     if rv == 0 then break end
+
+    local ctx
+    if blind then
+      ctx = true
+    elseif sel_known then
+      local ok, selected = pcall(function()
+        local mk = reaper.GetRegionOrMarker(proj, i, '')
+        if mk == nil then return false end
+        return reaper.GetRegionOrMarkerInfo_Value(proj, mk, 'B_UISEL') ~= 0
+      end)
+      ctx = (not ok or not selected) or nil
+    end
+
     list[#list + 1] = {
+      context = ctx,
       kind  = isrgn and 'region' or 'marker',
       obj   = idx,                     -- markrgnindexnumber, for SetProjectMarker4
       idx   = i,
@@ -202,15 +270,6 @@ function M.markers(proj)
 end
 
 -------------------------------------------------------------------- writes
-local HAS_MODERN_MARKER_API = nil
-local function modern_marker_api()
-  if HAS_MODERN_MARKER_API == nil then
-    HAS_MODERN_MARKER_API = reaper.APIExists('GetRegionOrMarker')
-                        and reaper.APIExists('SetRegionOrMarkerInfo_Value')
-  end
-  return HAS_MODERN_MARKER_API
-end
-
 --- True when this REAPER can clear a marker/region colour back to default.
 function M.can_clear_markers()
   return modern_marker_api()
@@ -289,8 +348,8 @@ function M.all(proj, opts)
   if opts.want_items ~= false then
     for _, e in ipairs(M.items(proj, opts)) do out[#out + 1] = e end
   end
-  if opts.want_markers ~= false and not opts.selected_only then
-    for _, e in ipairs(M.markers(proj)) do out[#out + 1] = e end
+  if opts.want_markers ~= false then
+    for _, e in ipairs(M.markers(proj, opts)) do out[#out + 1] = e end
   end
   return out
 end

@@ -21,7 +21,8 @@ local config = require 'config'
 local app    = require 'gui.app'
 
 P.track('Kick In'); P.track('Sub Bass'); P.track('Audio 7')
-P.item('gtr_dry_01'); P.mark('Chorus 1', true, { rgnend = 4 })
+P.item('gtr_dry_01')
+P.mark('Chorus 1', true, { rgnend = 4 }); P.mark('Chorus 2', true, { rgnend = 8 })
 
 ---------------------------------------------------------------- first run
 local cfg = app.load()
@@ -33,9 +34,9 @@ check(app.st.info.created == true, 'first run is flagged as created')
 ---------------------------------------------------------------- preview
 P.advance(1)
 app.refresh_entries(true)
--- 3 tracks + 1 item + 1 region. The master is not enumerated at all: REAPER
+-- 3 tracks + 1 item + 2 regions. The master is not enumerated at all: REAPER
 -- does not honour a custom colour on it.
-check(#app.st.entries == 5, 'refresh_entries scans the project', #app.st.entries .. ' entries')
+check(#app.st.entries == 6, 'refresh_entries scans the project', #app.st.entries .. ' entries')
 do
   local has_master = false
   for _, e in ipairs(app.st.entries) do if e.name == 'MASTER' then has_master = true end end
@@ -177,6 +178,46 @@ do
   local left = 0
   for _, t in ipairs(P.tracks) do if t.color ~= 0 then left = left + 1 end end
   check(left == 0, 'clear_colors("all") resets every track', left .. ' left')
+end
+
+------------------------------------------ regions and markers can be selected
+do
+  local targets = require 'targets'
+  local function clear_sel()
+    for _, t in ipairs(P.tracks) do t.sel = false end
+    for _, i in ipairs(P.items)  do i.sel = false end
+    for _, m in ipairs(P.marks)  do m.sel = false end
+    P.set_cursor_context(nil)
+  end
+
+  clear_sel()
+  check(targets.count_selected_markers(0) == 0, 'no selected regions to start')
+  P.marks[1].sel = true
+  check(targets.count_selected_markers(0) == 1, 'B_UISEL is read back')
+
+  -- Unselected markers must still be ENUMERATED, as context: a gradient
+  -- grouped into runs needs its neighbours, so leaving them out would give a
+  -- selected region a different colour from the one Apply All gives it.
+  local es = targets.all(0, { selected_only = true })
+  local nregion, nctx = 0, 0
+  for _, e in ipairs(es) do
+    if e.kind == 'region' then
+      nregion = nregion + 1
+      if e.context then nctx = nctx + 1 end
+    end
+  end
+  check(nregion == 2, 'both regions are enumerated', nregion .. ' seen')
+  check(nctx == 1, 'and the unselected one is context, not missing', nctx .. ' context')
+
+  -- the bug: clearing the selection ignored regions and markers entirely
+  app.st.cfg = config.starter()
+  P.marks[1].color = 0x1FF0000
+  P.marks[2].color = 0x100FF00
+  app.clear_colors('selected')
+  check(P.marks[1].color == 0, 'the selected region IS cleared')
+  check(P.marks[2].color ~= 0, 'and an unselected one is left alone')
+
+  clear_sel()
 end
 
 ---------------------------------------------- which selection was meant

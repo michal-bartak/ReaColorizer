@@ -146,6 +146,15 @@ function M.install(opts)
     return r[n] ~= nil
   end
   r.GetRegionOrMarker = function(_, index) return P.marks[index+1] end
+  -- B_UISEL is how REAPER exposes "selected in arrange view" for a marker or
+  -- region; there is no CountSelectedMarkers to go with it.
+  r.GetRegionOrMarkerInfo_Value = function(_, mk, parm)
+    if mk == nil then return 0 end
+    if parm == 'B_UISEL'       then return mk.sel and 1 or 0 end
+    if parm == 'I_CUSTOMCOLOR' then return mk.color or 0 end
+    if parm == 'B_ISREGION'    then return mk.isrgn and 1 or 0 end
+    return 0
+  end
   r.SetRegionOrMarkerInfo_Value = function(_, mk, parm, v)
     if parm == 'I_CUSTOMCOLOR' then mk.color = v end
     return true
@@ -216,7 +225,8 @@ function M.install(opts)
   function P.mark(name, isrgn, o)
     o = o or {}
     local m = { name = name, isrgn = isrgn, pos = o.pos or (#P.marks * 1.0),
-                rgnend = o.rgnend or 0, idx = #P.marks + 1, color = o.color or 0 }
+                rgnend = o.rgnend or 0, idx = #P.marks + 1, color = o.color or 0,
+                sel = o.sel or false }
     P.marks[#P.marks+1] = m
     return m
   end

@@ -208,8 +208,9 @@ local function clear_popup()
                           'whether or not a rule matches it.\n\n' ..
                           'Follows the same focus rule as Selection: with both\n' ..
                           'a track and items selected, whichever you clicked\n' ..
-                          'last wins. Regions and markers are left alone --\n' ..
-                          'they have no selection this can read.')
+                          'last wins. Selected regions and markers are always\n' ..
+                          'included -- there is no focus value to weigh them\n' ..
+                          'against.')
   end
 
   if ImGui.MenuItem(ctx, 'Clear EVERY custom colour in the project...') then
@@ -295,7 +296,8 @@ local function action_bar(FS)
                           'When a track AND some items are selected, whichever\n' ..
                           'you clicked last wins -- the same rule REAPER uses\n' ..
                           'for its own "depending on focus" actions. The status\n' ..
-                          'line says which it used.')
+                          'line says which it used.\n\n' ..
+                          'Selected regions and markers are always included.')
   end
 
   ImGui.SameLine(ctx)

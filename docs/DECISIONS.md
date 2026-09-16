@@ -324,3 +324,26 @@ Dropping them would change the colours the items get.
 
 The status line names which it used (`Coloured 3 of 3 selected items.`), so a
 wrong guess is visible immediately rather than discovered later.
+
+### Regions and markers are on their own axis
+
+They were left out of every selection action, on the mistaken belief that
+REAPER exposes no selection state for them. It does: `B_UISEL` ("selected in
+arrange view") on `GetRegionOrMarkerInfo_Value`. There is no `IsMarkerSelected`
+and no `CountSelectedMarkers`, which is what made it look absent -- found by
+reading the API table out of the REAPER binary, not from a guess.
+
+They are **always honoured when selected**, never arbitrated. The cursor
+context has no value for markers (0/1/2 are track panels, items, envelopes), so
+a leftover marker selection genuinely cannot be told from a deliberate one. The
+status line falls back to the neutral "objects" whenever a marker selection
+joins a track or item one, rather than claiming a count it cannot stand behind.
+
+Unselected markers are enumerated and flagged `context`, not skipped -- the same
+guarantee tracks get. A gradient grouped into runs needs its neighbours, so
+leaving them out would give a selected region a different colour from the one
+Apply All gives it.
+
+A build without the modern marker API cannot report selection, and there every
+marker becomes context. Colouring all of them would be worse than colouring
+none, and that build cannot clear marker colours anyway.

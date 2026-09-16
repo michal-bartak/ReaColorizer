@@ -288,8 +288,11 @@ end
 --- never disagree about what "the selection" is.
 --- @return opts, focus, noun
 local function selection_scope()
-  local focus = targets.selection_focus(0)
-  local opts  = { selected_only = true, want_markers = false }
+  local focus, _, _, nmk = targets.selection_focus(0)
+  -- Markers and regions ARE enumerated: targets.markers reads B_UISEL and
+  -- flags the unselected ones as context, so they filter themselves while
+  -- still anchoring a gradient's runs.
+  local opts  = { selected_only = true }
   local noun  = 'object'
 
   if focus == 'items' then
@@ -301,6 +304,11 @@ local function selection_scope()
     opts.want_items = false
     noun = 'track'
   end
+
+  -- A selected region alongside a selected track makes "3 selected tracks" a
+  -- lie, so fall back to the neutral noun rather than pick a side.
+  if nmk and nmk > 0 and focus ~= nil then noun = 'object' end
+  if focus == nil and nmk and nmk > 0 then noun = 'object' end
   return opts, focus, noun
 end
 
