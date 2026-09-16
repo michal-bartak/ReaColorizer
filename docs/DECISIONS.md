@@ -265,6 +265,15 @@ A rule change does clear the loop's cache, so the next sweep re-evaluates
 everything against the new rules. That is what stops a partly-applied project:
 you never get some objects on the old rules and some on the new.
 
+**One exception, and it is not a new repaint.** A cold sweep is chunked across
+ticks. If a rule change lands while one is still draining, the queued ops are
+discarded — they were planned against the old rules — but part of that sweep has
+already been written. Walking away there leaves the project genuinely
+half-applied, with nothing scheduled to reconcile it: the symptom is "it just
+stops recolouring and never resumes". So when in-flight work is dropped, and
+only then, the loop forces a fresh sweep. Finishing a sweep already started is
+not the same as starting one.
+
 ## Manual colours and rule ownership
 
 With *reset when unmatched* on for a kind, the rules own that kind: a colour set

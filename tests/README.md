@@ -31,6 +31,12 @@ treats colour 0 as *leave unchanged* so it cannot clear, and the project change
 counter ticks on **our own** writes — which is what makes the auto-loop's
 self-retrigger guard testable.
 
+Mock time only moves when a test moves it, which meant the auto-loop's
+wall-clock budget could never expire and its **chunking was never exercised** —
+the interrupted-cold-sweep bug lived behind that gap. Pass `tick_cost` to
+`mock.install` to make every `time_precise` reading creep forward, and the
+chunking becomes real.
+
 **`mockimgui.lua`** is a no-op ImGui that lets the real drawing code run. It
 cannot tell us the window *looks* right, but it proves every path executes, no
 call is misspelled, and edits actually reach `app.mark_dirty()`. Constants come

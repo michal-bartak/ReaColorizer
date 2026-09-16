@@ -148,6 +148,75 @@ do
         tostring(colors.from_native(it.color)))
 end
 
+-- A cold sweep is chunked across ticks. If a config change lands while one is
+-- still draining, its queued ops are (rightly) discarded -- they were planned
+-- against the old rules. But part of that sweep has already been written, so
+-- the loop has to finish the job or the project is left half-applied with
+-- nothing scheduled to reconcile it. That looked like "it just stops
+-- recolouring".
+do
+  local TMP2 = os.getenv('SP') .. '/coldint'
+  os.execute('rm -rf "' .. TMP2 .. '" && mkdir -p "' .. TMP2 .. '/NameColorizer"')
+  -- time creeps on every reading, so the cold budget really does expire
+  local P2 = mock.install{ resource = TMP2, script = NC .. '/x.lua', tick_cost = 0.002 }
+  P2.now = 1000
+  for _, m in ipairs({ 'targets', 'apply', 'autoloop', 'config' }) do
+    package.loaded[m] = nil
+  end
+  local config2   = require 'config'
+  local autoloop2 = require 'autoloop'
+  local colors2   = require 'colors'
+
+  local t = P2.track('Str1')
+  for i = 1, 60 do P2.item('it' .. i, { track = t }) end
+
+  local c = config2.defaults()
+  c.options.propagate_folders = 'off'
+  c.options.cold_budget_ms = 1
+  c.rules.item[1] = rules.new('item', { label = 'Items', mode = 'substring',
+                                        pattern = 'it', color = 0x00FF00 })
+  assert(config2.save(c))
+  autoloop2.reset()
+
+  local function tick2() P2.advance(0.3); autoloop2.tick() end
+  local function uncoloured()
+    local n = 0
+    for _, it in ipairs(P2.items) do
+      if colors2.from_native(it.color) == nil then n = n + 1 end
+    end
+    return n
+  end
+
+  local queued = false
+  for _ = 1, 12 do
+    tick2()
+    if autoloop2.state.cold then queued = true break end
+  end
+  check(queued, 'a cold sweep really does queue work across ticks')
+
+  local c2 = config2.load()
+  c2.rules.item[1].color = 0x0000FF
+  assert(config2.save(c2))                 -- the interruption
+
+  for _ = 1, 300 do tick2() end
+  check(uncoloured() == 0,
+        'an interrupted cold sweep is finished, not abandoned',
+        uncoloured() .. ' items left uncoloured')
+
+  local wrong = 0
+  for _, it in ipairs(P2.items) do
+    if colors2.from_native(it.color) ~= 0x0000FF then wrong = wrong + 1 end
+  end
+  check(wrong == 0, 'and it finishes with the NEW rules, not the ones it started on',
+        wrong .. ' items on the old colour')
+
+  -- put the shared mock back for anything after this
+  for _, m in ipairs({ 'targets', 'apply', 'autoloop', 'config' }) do
+    package.loaded[m] = nil
+  end
+  mock.install{ resource = TMP, script = NC .. '/x.lua' }
+end
+
 -- auto sweeps must not litter the undo history
 check(#P.undo == 0, 'the auto loop creates no undo points by default',
       #P.undo .. ' undo blocks')

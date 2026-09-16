@@ -142,7 +142,14 @@ function M.install(opts)
 
   -- time and the project change counter --------------------------------
   P.now, P.scc = 0.0, 0
-  r.time_precise = function() return P.now end
+  -- Optionally let time creep forward on every reading. Without this the
+  -- wall-clock budget in the auto-loop's cold sweep can never expire, so the
+  -- chunking it exists for is never exercised.
+  P.tick_cost = opts.tick_cost or 0
+  r.time_precise = function()
+    P.now = P.now + P.tick_cost
+    return P.now
+  end
   function P.advance(dt) P.now = P.now + (dt or 0.25) end
   r.GetProjectStateChangeCount = function() return P.scc end
   r.EnumProjects = function() return 'PROJ0' end

@@ -171,14 +171,21 @@ function M.tick()
   if rev ~= S.rev or S.cfg == nil then
     S.rev  = rev
     S.cfg  = config.load()
+    local had_pending = S.cold ~= nil
     S.cache, S.cold = {}, nil
     require('matcher').clear_cache()
-    -- Deliberately NOT forcing a sweep here. Editing rules is authoring; Apply
-    -- Now is its commit. The loop exists to keep the project in step with the
-    -- SAVED rules as objects change, not to repaint the project while someone
-    -- is still typing a pattern. Clearing the cache above means the next sweep
-    -- -- whenever the project next changes -- re-evaluates everything against
-    -- the new rules, so this never leaves a half-applied project.
+
+    -- Editing rules does not repaint the project: that is what Apply Now is
+    -- for, and it matches how every other edit in the window behaves.
+    --
+    -- One exception, and it is not a new repaint. If a cold sweep was still
+    -- draining, its queued ops were just discarded -- they were planned
+    -- against the old rules, so applying them would be wrong. But some of that
+    -- sweep has already been written, so walking away now leaves the project
+    -- genuinely half-applied: a few objects on the old rules and the rest
+    -- untouched, with nothing scheduled to reconcile them. Finishing a sweep
+    -- we had already started is not the same as starting one.
+    if had_pending then S.last_scc, S.prev_scc = nil, nil end
   end
 
   -- An Apply Now, from the window or the action, means "rules decide again".
