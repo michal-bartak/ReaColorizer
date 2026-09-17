@@ -866,12 +866,36 @@ do
   theme.SECTION_CASE = saved
 end
 
+------------------------------------------------- the tester is a scratch pad
+do
+  -- It draws with nothing selected, and offers its own mode buttons.
+  app.st.sel_id = nil
+  local ok, err, rec = frame()
+  check(ok, 'a frame with no rule selected draws', tostring(err))
+  for _, lbl in ipairs({ 'contains##tmode1', 'glob##tmode2', 'regex##tmode3' }) do
+    check(rec.labels[lbl], 'the tester offers the ' .. lbl:match('^%a+') .. ' button')
+  end
+  check(rec.labels['pattern'] and rec.labels['a name to try it on'],
+        'and its own pattern and name fields')
+
+  local pv = pathlib_read('lib/gui/preview.lua')
+  check(not pv:find('Use selected track name', 1, true),
+        'the "use the selected track" button is gone')
+  local body = pv:match('function M%.draw_tester.-\nend\n')
+  check(body and not body:find('sel_id', 1, true),
+        'and draw_tester never looks at the selection')
+  check(not pv:find('Heads up', 1, true),
+        'the rule warnings have left the tester panel')
+  check(pathlib_read('lib/gui/window.lua'):find('rulesmod.warnings', 1, true) ~= nil,
+        'and sit beside the rules they are about')
+end
+
 do -- the renamed panel headings
   local pv = pathlib_read('lib/gui/preview.lua')
   check(pv:find("theme.section('Objects preview')", 1, true) ~= nil,
         'the preview list is headed "Objects preview"')
-  check(pv:find("theme.section('Name tester')", 1, true) ~= nil,
-        'and the tester "Name tester"')
+  check(pv:find("theme.section('Pattern tester')", 1, true) ~= nil,
+        'and the tester "Pattern tester"')
   check(not pv:find('rules match right now', 1, true), 'the old wording is gone')
   check(not pv:find("'Try a name'", 1, true), 'and so is the old tester heading')
 

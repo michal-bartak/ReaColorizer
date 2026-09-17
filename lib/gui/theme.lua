@@ -345,6 +345,37 @@ function M.color_swatch(label, rgb)
                           ImGui.ColorEditFlags_NoInputs | ImGui.ColorEditFlags_NoLabel)
 end
 
+--- A row of mutually exclusive buttons. ImGui has no segmented control, so
+--- the chosen one is drawn in the active-button colour and the others are left
+--- at rest. Every button gets the width of the widest label, otherwise a row
+--- of them comes out ragged.
+--- @param items array of { value = ..., label = ... }
+--- @return the value that was clicked, or nil
+function M.segmented(id, items, current)
+  local picked
+  local sel = ImGui.GetStyleColor(ctx, ImGui.Col_ButtonActive)
+
+  local w = 0
+  for _, it in ipairs(items) do
+    local tw = ImGui.CalcTextSize(ctx, it.label)
+    if tw > w then w = tw end
+  end
+  w = w + 2 * px(ImGui.GetFontSize(ctx) * M.PAD_X)
+
+  for i, it in ipairs(items) do
+    if i > 1 then ImGui.SameLine(ctx, 0, M.SWATCH_GAP) end
+    local on = it.value == current
+    if on then
+      ImGui.PushStyleColor(ctx, ImGui.Col_Button, sel)
+      ImGui.PushStyleColor(ctx, ImGui.Col_ButtonHovered, sel)
+    end
+    if ImGui.Button(ctx, it.label .. '##' .. id .. i, w, 0) then picked = it.value end
+    if on then ImGui.PopStyleColor(ctx, 2) end
+  end
+
+  return picked
+end
+
 --- Put the next widget on the same line, with the swatch-row gap.
 function M.same_line_tight()
   ImGui.SameLine(ctx, 0, M.SWATCH_GAP)

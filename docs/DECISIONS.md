@@ -113,6 +113,23 @@ doing its own scanning alongside. The cost of the timer is that the preview can
 sit a quarter of a second behind the project, which is below the threshold where
 anyone reads it as staleness rather than as drawing.
 
+## The pattern tester is a scratch pad, not a rule inspector
+
+It used to run the SELECTED rule's pattern against a typed name, plus a button
+that fetched the selected track's name. Both couplings were backwards: to try
+an expression you first had to commit it to a rule, and the thing you most want
+while designing a pattern is somewhere to get it wrong without touching your
+rule set.
+
+So the panel now owns its three inputs -- mode, pattern, name -- and reads
+nothing from the selection or the project. Case folding is not offered: a
+pattern being worked out is tried against a name you typed, and `(?i)` covers
+the rare case for regex.
+
+The rule-level advisory notes ("matches every track", "this gradient collapses
+to one colour") moved out with it, to under the rule table, beside the rule
+they are about.
+
 ## The background loop must not be obnoxious
 
 * **Never reverts a hand-picked colour.** If an object's colour differs from

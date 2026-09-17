@@ -76,6 +76,7 @@ function M.new(opts)
     -- widgets that echo their value back unchanged
     Checkbox     = function(_, _, v) return false, v end,
     InputText    = function(_, _, v) return false, v end,
+    InputTextWithHint = function(_, _, _, v) return false, v end,
     ColorEdit3   = function(_, _, v) return false, v end,
     SliderDouble = function(_, _, v) return false, v end,
     SliderInt    = function(_, _, v) return false, v end,

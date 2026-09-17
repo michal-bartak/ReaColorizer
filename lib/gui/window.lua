@@ -408,6 +408,18 @@ function M.draw(FS)
           ImGui.TextColored(ctx, rgba(COL_WARN), 'Every rule on this tab is switched off.')
         end
 
+        -- The selected rule's advisory notes. They used to sit under the name
+        -- tester; that panel is a scratch pad now, and these belong beside the
+        -- rule they are about anyway.
+        local sr = st.sel_id and app.rule_by_id(st.sel_id)
+        if sr and sr.kind == kind then
+          for _, wtext in ipairs(rulesmod.warnings(sr, st.cfg and st.cfg.options)) do
+            ImGui.TextColored(ctx, rgba(COL_WARN), '- ')
+            ImGui.SameLine(ctx, 0, 0)
+            ImGui.TextWrapped(ctx, wtext)
+          end
+        end
+
         ImGui.Indent(ctx, theme.TAB_INSET)  -- restore for the strip itself
         theme.push_tab_padding(FS)
         ImGui.EndTabItem(ctx)

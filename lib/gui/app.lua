@@ -43,7 +43,7 @@ local st = {
   undo = {},
   toast = nil, toast_at = 0,
 
-  tester = { subject = 'Kick In', result = nil },
+  tester = { mode = 'substring', pattern = '', subject = '', result = nil },
 }
 
 M.st = st
@@ -372,18 +372,19 @@ function M.clear_colors(scope)
 end
 
 -------------------------------------------------------------------- tester
---- Run the selected rule's pattern against the tester's subject string.
+--- Run the tester's own pattern against its own subject.
+---
+--- The tester is a scratch pad, deliberately unaware of the selected rule and
+--- of the project: you work an expression out here, then type it into a rule.
 function M.run_tester()
-  local r = st.sel_id and M.rule_by_id(st.sel_id)
   local t = st.tester
-  if not r then t.result = nil; return end
 
-  if r.pattern == '' then
+  if t.pattern == '' then
     t.result = { ok = true, note = 'empty pattern: matches any name' }
     return
   end
 
-  local m, err, pos = matcher.compile(r.mode, r.pattern, r.ci)
+  local m, err, pos = matcher.compile(t.mode, t.pattern, false)
   if not m then
     t.result = { err = err, pos = pos }
     return
@@ -392,10 +393,16 @@ function M.run_tester()
   local hit, why = m:test(t.subject)
   local res = { ok = hit, budget = (why == 'budget') }
 
-  -- For regex, also show the matched span and any capture groups.
-  if r.mode == 'regex' and m.rx then
-    local a, b, caps = m.rx:find(t.subject)
-    if a then res.span = { a, b }; res.caps = caps end
+  -- Where it matched, and what it captured. Glob compiles to a regex too, so
+  -- both of those modes can show a span; substring finds its own.
+  if hit then
+    if m.rx then
+      local a, b, caps = m.rx:find(t.subject)
+      if a then res.span = { a, b }; res.caps = caps end
+    else
+      local a, b = string.find(t.subject, t.pattern, 1, true)
+      if a then res.span = { a, b } end
+    end
   end
   t.result = res
 end
