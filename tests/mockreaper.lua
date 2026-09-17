@@ -1,8 +1,14 @@
 --[[ A small fake REAPER, enough to run the real action scripts headlessly.
      Models the awkward bits faithfully: P_NAME returns false on the master,
      items carry no name (only their active take does), I_CUSTOMCOLOR needs the
-     0x1000000 bit to count, and SetProjectMarker4 treats colour 0 as
-     "leave unchanged" so it cannot clear. ]]
+     0x1000000 bit to count, SetProjectMarker4 treats colour 0 as
+     "leave unchanged" so it cannot clear, and ValidatePtr2 reports a deleted
+     object as gone rather than crashing the way the real one would not.
+
+     Two clocks, because they answer different questions. `tick_cost` advances
+     time on every reading, which is a caricature; `write_cost` advances it per
+     WRITE, which is where the real cost is, and is what any test about the
+     cold sweep's time budget should use. ]]
 local M = {}
 
 function M.install(opts)
@@ -53,6 +59,7 @@ function M.install(opts)
   r.SetMediaTrackInfo_Value = function(t, parm, v)
     if parm == 'I_CUSTOMCOLOR' then t.color = v end
     P.scc = P.scc + 1
+    P.now = P.now + P.write_cost
   end
 
   -- items know which track they sit on (needed for the track->item cascade)
@@ -119,6 +126,7 @@ function M.install(opts)
   r.SetMediaItemInfo_Value = function(it, parm, v)
     if parm == 'I_CUSTOMCOLOR' then it.color = v end
     P.scc = P.scc + 1
+    P.now = P.now + P.write_cost
   end
 
   r.EnumProjectMarkers3 = function(_, i)
@@ -129,7 +137,8 @@ function M.install(opts)
   r.SetProjectMarker4 = function(_, idx, isrgn, pos, rgnend, name, color, flags)
     for _, m in ipairs(P.marks) do
       if m.idx == idx and m.isrgn == isrgn then
-        if color ~= 0 then m.color = color; P.scc = P.scc + 1 end   -- 0 means "leave unchanged"
+        -- 0 means "leave unchanged"
+        if color ~= 0 then m.color = color; P.scc = P.scc + 1; P.now = P.now + P.write_cost end
         return true
       end
     end
@@ -145,7 +154,36 @@ function M.install(opts)
     end
     return r[n] ~= nil
   end
+  r.CountProjectMarkers = function()
+    local nm, nr = 0, 0
+    for _, m in ipairs(P.marks) do
+      if m.isrgn then nr = nr + 1 else nm = nm + 1 end
+    end
+    return #P.marks, nm, nr
+  end
   r.GetRegionOrMarker = function(_, index) return P.marks[index+1] end
+  -- A marker keeps its GUID across a move; index and position do not, which is
+  -- why the auto-loop cache asks for this one.
+  r.GetSetRegionOrMarkerInfo_String = function(_, mk, parm)
+    if mk == nil then return false, '' end
+    if parm == 'GUID'   then return true, mk.guid end
+    if parm == 'P_NAME' then return true, mk.name or '' end
+    return false, ''
+  end
+  -- Colours are planned in one tick and written in a later one, so the object
+  -- can be gone by the time the write happens.
+  r.ValidatePtr2 = function(_, obj, ctype)
+    if obj == nil then return false end
+    if ctype == 'MediaTrack*' then
+      if obj == master then return true end
+      for _, t in ipairs(P.tracks) do if t == obj then return true end end
+      return false
+    elseif ctype == 'MediaItem*' then
+      for _, it in ipairs(P.items) do if it == obj then return true end end
+      return false
+    end
+    return true
+  end
   -- B_UISEL is how REAPER exposes "selected in arrange view" for a marker or
   -- region; there is no CountSelectedMarkers to go with it.
   r.GetRegionOrMarkerInfo_Value = function(_, mk, parm)
@@ -166,6 +204,9 @@ function M.install(opts)
   -- wall-clock budget in the auto-loop's cold sweep can never expire, so the
   -- chunking it exists for is never exercised.
   P.tick_cost = opts.tick_cost or 0
+  -- What a single colour write costs. The cold sweep's budget is spent on
+  -- writes, so this is the honest knob for testing that it chunks at all.
+  P.write_cost = opts.write_cost or 0
   r.time_precise = function()
     P.now = P.now + P.tick_cost
     return P.now
@@ -226,10 +267,21 @@ function M.install(opts)
     o = o or {}
     local m = { name = name, isrgn = isrgn, pos = o.pos or (#P.marks * 1.0),
                 rgnend = o.rgnend or 0, idx = #P.marks + 1, color = o.color or 0,
-                sel = o.sel or false }
+                sel = o.sel or false,
+                guid = '{' .. (isrgn and 'R' or 'M') .. (#P.marks+1) .. '}' }
     P.marks[#P.marks+1] = m
     return m
   end
+
+  -- Deleting objects, so a test can pull one out from under a queued write.
+  local function drop(list, obj)
+    for i, x in ipairs(list) do
+      if x == obj then table.remove(list, i); P.scc = P.scc + 1; return true end
+    end
+    return false
+  end
+  function P.delete_track(t) return drop(P.tracks, t) end
+  function P.delete_item(it) return drop(P.items, it) end
   function P.consoletext() return table.concat(P.console, '') end
 
   return P

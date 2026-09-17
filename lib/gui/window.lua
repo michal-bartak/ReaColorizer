@@ -159,6 +159,21 @@ local function options_popup(FS)
   rv, v = ImGui.SliderInt(ctx, 'Work budget (ms)', math.floor(o.cold_budget_ms), 1, 50)
   if rv then o.cold_budget_ms = v; app.mark_dirty(true) end
 
+  ImGui.SetNextItemWidth(ctx, FS * 10)
+  rv, v = ImGui.SliderInt(ctx, 'Rescan items at most every (s)',
+                          math.floor(o.cold_interval), 0, 60)
+  if rv then o.cold_interval = v; app.mark_dirty(true) end
+  if ImGui.IsItemHovered(ctx) then
+    ImGui.SetTooltip(ctx,
+      'Tracks are checked on every change. Items and regions are\n' ..
+      'much more numerous, so they are only re-read when something\n' ..
+      'says they need it -- one appeared or vanished, a track\n' ..
+      'changed, or this long has passed.\n\n' ..
+      'It is the delay before an item RENAMED in place is noticed;\n' ..
+      'nothing else waits on it. 0 re-reads everything on every\n' ..
+      'change, which is slow on a large project.')
+  end
+
   theme.section('Window', true)
   ImGui.SetNextItemWidth(ctx, FS * 10)
   rv, v = ImGui.SliderInt(ctx, 'Text size', math.floor(o.font_size), 8, 32)

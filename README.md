@@ -180,9 +180,23 @@ It is built to stay out of your way:
 * It writes nothing when nothing changed, and pauses entirely while recording.
 * Tracks are swept immediately; items and regions follow once the project has
   settled, in time-budgeted chunks.
+* **It tries hard not to re-read your project.** REAPER reports one
+  project-wide "something changed" counter, so a fader move arrives looking
+  exactly like a rename. Tracks are re-read on every change (a rename is only
+  visible by reading names) but re-planned only when that reading actually
+  differs. Items and regions, of which there are far more, are re-read only when
+  one appeared or vanished, when a track changed, or when
+  **Rescan items at most every (s)** has passed — 5 s by default, and the only
+  thing waiting on it is an item *renamed in place*, which nothing cheaper can
+  see. Set it to 0 to re-read everything on every change.
 
-**Apply now** (from the window or the action) tells the background loop to drop
-those marks, so the rules take every object back. That is the way out if you
+Editing a rule does not repaint the project, and neither does clicking around
+in it afterwards — the edit is held until an object actually changes, and then
+applied to everything at once so the project is never half on the old rules.
+**Apply now** is the way to commit an edit immediately.
+
+**Apply now** (from the window or the action) also tells the background loop to
+drop those marks, so the rules take every object back. That is the way out if you
 have hand-coloured something and want the rules to own it again.
 
 Opening the configuration window does **not** stop or pause the background loop.

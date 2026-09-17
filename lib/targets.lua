@@ -18,9 +18,16 @@
 
   Marker/region note: reading uses EnumProjectMarkers3 and writing uses
   SetProjectMarker4. Both are long-stable. The 7.62+ GetRegionOrMarker family is
-  used for exactly one thing -- CLEARING a colour -- because SetProjectMarker4
-  treats colour 0 as "leave unchanged" and so physically cannot clear. That call
-  is guarded by APIExists with a graceful fallback.
+  used for three things -- CLEARING a colour (SetProjectMarker4 treats colour 0
+  as "leave unchanged" and so physically cannot clear), reading B_UISEL, and
+  reading a marker's GUID. All of them are guarded by APIExists with a graceful
+  fallback.
+
+  That GUID matters more than it looks. The fallback identity is index+position,
+  so nudging a region used to change who it was, which lost the auto-loop's
+  memory that its colour had been picked by hand -- and leaked a cache entry per
+  move. "GUID" is read-only on GetSetRegionOrMarkerInfo_String and is what a
+  marker keeps across a move.
 ]]
 
 local colors = require 'colors'
@@ -36,6 +43,53 @@ local function modern_marker_api()
                         and reaper.APIExists('SetRegionOrMarkerInfo_Value')
   end
   return HAS_MODERN_MARKER_API
+end
+
+-- Separate from the above: a build could plausibly have the value accessors
+-- without the string one, and losing GUIDs is a smaller loss than losing the
+-- ability to clear a colour. Neither is worth failing over.
+local HAS_MARKER_GUID = nil
+local function marker_guid_api()
+  if HAS_MARKER_GUID == nil then
+    HAS_MARKER_GUID = modern_marker_api()
+                  and reaper.APIExists('GetSetRegionOrMarkerInfo_String')
+  end
+  return HAS_MARKER_GUID
+end
+
+-- Everything one scan needs to know about a marker beyond what
+-- EnumProjectMarkers3 already told us: its handle, its stable identity and
+-- whether it is selected. Deliberately ONE call for all three, and a top-level
+-- function rather than a closure, so the pcall that wraps it costs nothing per
+-- marker beyond the call itself.
+-- @return handle, guid|nil, selected
+local function marker_extras(proj, i)
+  local mk = reaper.GetRegionOrMarker(proj, i, '')
+  if mk == nil then return nil end
+  local guid
+  if marker_guid_api() then
+    local _, g = reaper.GetSetRegionOrMarkerInfo_String(proj, mk, 'GUID', '', false)
+    if g ~= nil and g ~= '' then guid = g end
+  end
+  return mk, guid, reaper.GetRegionOrMarkerInfo_Value(proj, mk, 'B_UISEL') ~= 0
+end
+
+--- True when this object still exists. Colours planned in one tick are written
+--- in a later one, so between the two the user can delete the track or item the
+--- plan is holding a pointer to -- and writing through a freed pointer is not
+--- something REAPER recovers from. ValidatePtr2 has been in the API since
+--- REAPER 4, but it is probed like everything else rather than assumed.
+--- Project 0 is the active one, which is the only project anything here writes
+--- to (the marker calls below hardcode it too).
+local HAS_VALIDATE = nil
+local function alive(obj, ctype)
+  if HAS_VALIDATE == nil then HAS_VALIDATE = reaper.APIExists('ValidatePtr2') end
+  if not HAS_VALIDATE then return true end
+  -- Truthy rather than `== true` on purpose. The two ways this can be wrong are
+  -- not equal: writing through a stale pointer is rare and needs a deletion to
+  -- land in a narrow window, while reading an unexpected return type as "gone"
+  -- would silently stop the tool colouring anything at all.
+  return reaper.ValidatePtr2(0, obj, ctype) and true or false
 end
 
 
@@ -79,10 +133,7 @@ function M.count_selected_markers(proj)
   while true do
     local rv = reaper.EnumProjectMarkers3(proj, i)
     if rv == 0 then break end
-    local ok, sel = pcall(function()
-      local mk = reaper.GetRegionOrMarker(proj, i, '')
-      return mk ~= nil and reaper.GetRegionOrMarkerInfo_Value(proj, mk, 'B_UISEL') ~= 0
-    end)
+    local ok, _, _, sel = pcall(marker_extras, proj, i)
     if ok and sel then n = n + 1 end
     i = i + 1
   end
@@ -235,21 +286,26 @@ function M.markers(proj, opts)
   local sel_known = opts.selected_only and modern_marker_api()
   local blind     = opts.selected_only and not sel_known
 
+  -- One extra call per marker buys a stable identity; markers are the one kind
+  -- a project holds few enough of for that to be the obvious trade.
+  local want_extras = modern_marker_api()
+
   local i = 0
   while true do
     local rv, isrgn, pos, rgnend, name, idx, color = reaper.EnumProjectMarkers3(proj, i)
     if rv == 0 then break end
 
+    local guid, selected
+    if want_extras then
+      local ok, _, g, sel = pcall(marker_extras, proj, i)
+      if ok then guid, selected = g, sel end
+    end
+
     local ctx
     if blind then
       ctx = true
     elseif sel_known then
-      local ok, selected = pcall(function()
-        local mk = reaper.GetRegionOrMarker(proj, i, '')
-        if mk == nil then return false end
-        return reaper.GetRegionOrMarkerInfo_Value(proj, mk, 'B_UISEL') ~= 0
-      end)
-      ctx = (not ok or not selected) or nil
+      ctx = (not selected) or nil
     end
 
     list[#list + 1] = {
@@ -259,14 +315,26 @@ function M.markers(proj, opts)
       idx   = i,
       isrgn = isrgn, pos = pos, rgnend = rgnend,
       name  = name or '',
-      -- EnumProjectMarkers3 gives no GUID; index+position is stable enough for
-      -- a cache whose only job is skipping unchanged objects.
-      guid  = string.format('%s:%d:%.6f', isrgn and 'R' or 'M', idx, pos),
+      -- EnumProjectMarkers3 gives no GUID, but GetSetRegionOrMarkerInfo_String
+      -- does and it survives a move. Without it the fallback is index+position,
+      -- which makes nudging a region look like a different object: the auto
+      -- loop forgets the colour was hand-picked and repaints it.
+      guid  = guid or string.format('%s:%d:%.6f', isrgn and 'R' or 'M', idx, pos),
       color = color or 0,
     }
     i = i + 1
   end
   return list
+end
+
+--------------------------------------------------------------------- counts
+--- How many items and markers the project holds, in two O(1) calls.
+--- The auto loop uses this to tell "an item appeared or vanished" from "a fader
+--- moved" without enumerating anything.
+--- @return n_items, n_markers
+function M.counts(proj)
+  local nmk = reaper.CountProjectMarkers(proj) or 0
+  return reaper.CountMediaItems(proj) or 0, nmk
 end
 
 -------------------------------------------------------------------- writes
@@ -281,11 +349,16 @@ function M.set(entry, rgb)
   local kind = entry.kind
   local native = rgb and colors.to_native(rgb) or 0
 
+  -- A vanished object is not a failure worth reporting: the plan was simply
+  -- made before the user deleted it. Say "nothing written" with no reason, so
+  -- commit() counts it as neither a write nor an error.
   if kind == 'track' then
+    if not alive(entry.obj, 'MediaTrack*') then return false end
     reaper.SetMediaTrackInfo_Value(entry.obj, 'I_CUSTOMCOLOR', native)
     return true
 
   elseif kind == 'item' then
+    if not alive(entry.obj, 'MediaItem*') then return false end
     reaper.SetMediaItemInfo_Value(entry.obj, 'I_CUSTOMCOLOR', native)
     -- Clear every take's own colour. Whether a take colour or the item colour
     -- is displayed is a REAPER preference, so leaving one in place can make the

@@ -45,6 +45,10 @@ local OPTION_SPEC = {
   auto_undo         = { default = false, kind = 'boolean' },
   tick_interval     = { default = 0.20, kind = 'number', min = 0.05, max = 2.0 },
   cold_budget_ms    = { default = 4,    kind = 'number', min = 1,    max = 50 },
+  -- How long the background loop may put off a full items-and-markers sweep
+  -- when nothing cheap suggests one is needed. 0 sweeps on every project
+  -- change, which is what it did before the gate existed.
+  cold_interval     = { default = 5,    kind = 'number', min = 0,    max = 60 },
   font_size         = { default = 14,   kind = 'number', min = 8,    max = 32 },
 }
 

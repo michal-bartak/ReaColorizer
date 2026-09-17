@@ -105,6 +105,14 @@ the usual failure mode for a tool with both a preview and a background worker.
 It has drifted twice and both were caught by tests comparing preview colour
 against what Apply wrote, object by object.
 
+The window re-reads the project on a settle timer as well as on the change
+counter. The counter alone is not a brake: dragging an item bumps it on every
+frame, so the window was re-reading every name, GUID and colour in the project
+at frame rate for as long as the mouse moved — while the auto-apply loop was
+doing its own scanning alongside. The cost of the timer is that the preview can
+sit a quarter of a second behind the project, which is below the threshold where
+anyone reads it as staleness rather than as drawing.
+
 ## The background loop must not be obnoxious
 
 * **Never reverts a hand-picked colour.** If an object's colour differs from
@@ -116,12 +124,92 @@ against what Apply wrote, object by object.
 * **Writes nothing when nothing changed**, so the change counter does not tick
   and the loop does not retrigger itself. The counter is re-read *after*
   committing for the same reason.
-* Tracks are swept every tick; items and regions follow once the project has
-  settled, in time-budgeted chunks.
+* Tracks are swept every tick that changed anything; items and regions follow
+  once the project has settled, and only when something says they need it (see
+  below), in time-budgeted chunks.
 * Apply Now clears the override marks through an ExtState counter — the loop
   lives in a separate Lua state and cannot be reached any other way. Clearing
   the flag is not enough: `applied` must be cleared too, or the next sweep
-  re-detects the manual colour and sets it straight back.
+  re-detects the manual colour and sets it straight back. It must also drop both
+  enumeration snapshots and reset the change counter: what the loop *would* do
+  has changed while the project has not, and the hand-picked colours it is being
+  told to take back are by definition ones no project change is coming for.
+* **Only what was actually written is remembered as ours.** `applied` used to be
+  recorded at plan time, so a write that failed — or one still queued when the
+  rules changed — left the cache claiming a colour the object never had. The
+  next sweep reads that difference as a hand-picked colour and retires the
+  object from the rules permanently. `commit()` marks each op it attempted, and
+  only those are recorded.
+* **A write can outlive the object it was planned for.** Chunking means ops are
+  committed a tick or more after they were planned, and the user can delete a
+  track in between. Every write goes through `ValidatePtr2` first; a vanished
+  object is skipped silently, because nothing failed — the plan was simply made
+  before it was deleted.
+
+## The loop cannot tell a fader move from a rename
+
+`GetProjectStateChangeCount` is a single project-wide integer: *"returns an
+integer that changes when the project state changes"*. There is no per-kind
+counter and nothing that says what changed. So a fader move, an FX tweak and a
+track rename all arrive identically, and the loop used to pay full price for
+each — three full track enumerations, one full item enumeration and three plans
+over every object in the project, for a fader.
+
+Three things narrow that down, cheapest first.
+
+**The enumeration is compared with the last one.** Reading names is the only way
+to see a rename, so the enumeration itself cannot be skipped — but *planning* is
+the expensive half, and it is skipped when the reading is identical to the one
+the last sweep planned from. The comparison is element-by-element over the
+fields `plan()` reads, rather than a hash: exact, no collisions to reason about,
+and it costs one pass of cheap comparisons. Order is part of it, because moving
+a track changes no name and no colour but does change folder inheritance and
+where a gradient's runs begin. `context` is deliberately excluded — the loop
+always enumerates with the same options, and the cold sweep sets that flag on
+the very track entries it borrows.
+
+**Items and regions are gated.** They outnumber tracks by orders of magnitude,
+so the cold sweep runs only when: a track really changed, the item or marker
+count changed (two O(1) calls), the rules changed, or `cold_interval` has
+passed. A burst of mixing now costs one sweep per interval instead of one per
+change.
+
+**A track change has to be latched.** It is an edge, and the settle it triggers
+arrives two ticks later — by which time the tracks match the snapshot again and
+the reason for sweeping has evaporated, leaving a renamed track's items
+uncascaded. So `cold_owed` is set when the change is seen and cleared only by
+the sweep itself. Counts need no latch: they are compared against the last cold
+sweep, not the last tick.
+
+**The safety net is not optional.** One edit is invisible to every signal above:
+renaming an item *in place* adds nothing, removes nothing and touches no track.
+A declined sweep therefore stays pending and runs anyway once `cold_interval`
+has passed — from the *idle* path if need be, because the project need not
+change again for that rename to still be waiting. `cold_interval = 0` declines
+nothing, which is exactly what this did before the gate existed.
+
+Deliberately not used: `Undo_CanUndo2`, whose description string would say what
+the last change was. Not every change makes an undo point, and the strings are
+translatable through a LangPack.
+
+## Matching the same name twice is free
+
+The loop re-tests the same names against the same rules on every sweep, and a
+project holds far fewer distinct names than objects — `01-Gtr L`, `02-Gtr L` and
+so on collapse to one entry per rule. So a rule remembers its answers in `_memo`,
+keyed by the name alone.
+
+That key is only sound because the memo's lifetime is owned by one function.
+`matcher.prepare()` drops it the moment the rule's compiled matcher changes, and
+`compile()` returns the *same* object for an unchanged (mode, pattern, ci) — so
+an ordinary sweep keeps the memo while an edited pattern loses it. Every rule
+change goes through `clear_cache()`, which recompiles, so that path invalidates
+too. Values are small integers rather than booleans so that "gave up on the step
+budget" survives the cache: it still reads as no-match, and the GUI still badges
+it.
+
+Measured on 200 tracks / 4000 items / 100 regions with the starter rules: the
+window's per-recompute cost (`tally` + `plan`) went from 15.3 ms to 2.9 ms.
 
 ## Gradients restart per group
 
@@ -193,8 +281,9 @@ keys: stable diffs, and safe to round-trip through ExtState, which documents
 newlines as unsupported.
 
 **Never serialise a live rule.** Rules carry runtime scratch (`_m`, `_err`,
-`_timeouts`) once prepared, and the compiled matcher contains character-class
-tables with integer keys, which is not encodable as a JSON object. That silently
+`_timeouts`, `_memo`) once prepared, and the compiled matcher contains
+character-class tables with integer keys, which is not encodable as a JSON
+object. That silently
 broke every save after the first preview until `config.serializable()` existed.
 
 ## GUI constraints worth knowing
@@ -250,6 +339,29 @@ Each of these was silent, and each now has a test named after its failure mode.
 7. **The test harness was silently dependent on the current directory** — it
    found the mocks through Lua's default `./?.lua`, so it only worked when
    invoked from inside `tests/`.
+8. **The cold sweep's time budget measured the wrong loop.** It timed a loop
+   that copied op references into a batch and then committed the batch
+   unbudgeted — and 4 ms buys about fifteen thousand of those copies, so the
+   entire queue went out in one tick and nothing was ever chunked. The budget
+   now belongs to `commit()`, which spends it on the writes. **The mock hid
+   this**: its clock advanced on every reading, so the test "a cold sweep really
+   does queue work across ticks" passed for a reason that does not exist in
+   REAPER. A mock that lies in the direction of the code being right is worse
+   than no test, so it grew a `write_cost` that charges per write instead.
+9. **`applied` was recorded before the write happened**, so a failed or
+   discarded write left the cache holding a colour the object never had — which
+   the next sweep read as the user's own choice and honoured for good.
+10. **The cache grew for the life of the session.** Nothing dropped entries for
+   deleted objects, and the position-based marker key added one per region
+   moved. The cold sweep is the one pass that sees every object, so it prunes.
+11. **A rule edit repainted the project on the next mouse click.** "Editing
+   rules does not repaint the project" was true only until you clicked
+   something: selection is project state, so a click on empty space moves the
+   change counter, and the loop had thrown away everything it knew about the
+   project the moment the rules were saved. The test that was supposed to pin
+   this behaviour bumped the counter by hand and asserted the repaint, so it
+   pinned the bug instead. It now asserts both halves: a bare counter bump
+   changes nothing, a real object change takes the edit up everywhere.
 
 ## Editing rules does not repaint the project
 
@@ -261,9 +373,22 @@ the window behaves, so there is one rule to learn rather than two.
 The loop's job is keeping the project in step with the *saved* rules as objects
 change — not repainting while someone is still typing a pattern.
 
-A rule change does clear the loop's cache, so the next sweep re-evaluates
-everything against the new rules. That is what stops a partly-applied project:
-you never get some objects on the old rules and some on the new.
+A rule change is **held**, not acted on. It drops the loop's cache and its
+compiled matchers, but deliberately leaves the enumeration snapshots alone:
+those describe what the *project* holds, and no rule edit can change that. The
+edit is taken up by the first real object change — and taken up for the whole
+project at once, so you never get some objects on the old rules and some on the
+new.
+
+Holding it that way is the difference between "does not repaint" and "repaints
+the moment you touch anything". The loop's only trigger is
+`GetProjectStateChangeCount`, and **selection is project state**: clicking empty
+space in the arrange, or a track panel in the mixer, moves that counter without
+changing a single object. Dropping the snapshots on a rule edit therefore meant
+the very next click re-planned everything and repainted the project — which
+reads as repainting at random, and is precisely what this section promises will
+not happen. Reported from the field, and it had been true since the loop was
+written. A rule edit invalidates the *answer*, not the *observation*.
 
 **One exception, and it is not a new repaint.** A cold sweep is chunked across
 ticks. If a rule change lands while one is still draining, the queued ops are
@@ -347,3 +472,12 @@ Apply All gives it.
 A build without the modern marker API cannot report selection, and there every
 marker becomes context. Colouring all of them would be worse than colouring
 none, and that build cannot clear marker colours anyway.
+
+**A marker's identity is its GUID, not its position.** `EnumProjectMarkers3`
+hands back no GUID, so the cache key was `index:position` — which made nudging a
+region a *different object* as far as the loop was concerned. It forgot that the
+colour had been picked by hand and painted over it, and leaked a cache entry per
+move. `GetSetRegionOrMarkerInfo_String` exposes `"GUID"` (read-only) and that is
+what a marker keeps across a move. The old key remains the fallback on a build
+without it. The extra call per marker per scan is the obvious trade for the one
+kind a project holds few enough of.
