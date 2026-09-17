@@ -8,6 +8,12 @@
 
   Compiled matchers are cached, because the auto-apply loop re-resolves rules
   constantly and compiling on every sweep would dominate its cost.
+
+  Results are cached too. The loop re-tests the SAME names against the SAME
+  rules on every sweep, and a project holds far fewer distinct names than
+  objects ("01-Gtr L", "02-Gtr L", ... collapse to one entry per rule). The memo
+  lives on the rule as `_memo`, keyed by name alone, which is only sound because
+  it is dropped the moment the rule's compiled matcher changes -- see prepare().
 ]]
 
 local R = require 'regex'
@@ -140,19 +146,35 @@ end
 --- rule as `_m`, and any error as `_err` / `_errpos` for the GUI to display.
 --- A rule whose pattern will not compile is skipped by the apply pipeline
 --- rather than being allowed to break the sweep.
+---
+--- This also owns the result memo's lifetime. compile() returns the SAME
+--- matcher object for an unchanged (mode, pattern, ci), so an ordinary sweep
+--- keeps its memo; an edited pattern -- or clear_cache(), which every rule
+--- change goes through -- yields a different object and the memo is dropped
+--- with it. That is the whole guarantee behind keying the memo on the name
+--- alone, so it must stay in one place.
 function M.prepare(rules)
   local bad = 0
   for _, r in ipairs(rules) do
-    if r.pattern == nil or r.pattern == '' then
-      r._m, r._err, r._errpos = nil, nil, nil     -- "any name"; predicate-only rule
-    else
-      local m, err, pos = M.compile(r.mode, r.pattern, r.ci)
-      r._m, r._err, r._errpos = m, err, pos
+    local m, err, pos
+    if r.pattern ~= nil and r.pattern ~= '' then
+      m, err, pos = M.compile(r.mode, r.pattern, r.ci)
       if not m then bad = bad + 1 end
     end
+    if m ~= r._m then r._memo, r._memon = nil, nil end
+    r._m, r._err, r._errpos = m, err, pos
   end
   return bad
 end
+
+-- Distinct names remembered per rule. A project cannot hold more of them than
+-- it holds objects, so this is a backstop against a pathological session
+-- (thousands of renames), not an expected limit.
+local MEMO_MAX = 4096
+
+-- Memo values are small integers rather than booleans so that "gave up on the
+-- step budget" survives the cache: it reads as no-match but the GUI badges it.
+local NO, YES, BUDGET = 0, 1, 2
 
 --- Test one rule against one name. An empty pattern matches any name, which is
 --- what makes predicate-only rules ("every folder track") expressible.
@@ -161,7 +183,24 @@ function M.test(rule, name)
   if rule.pattern == nil or rule.pattern == '' then return true end
   local m = rule._m
   if not m then return false end        -- pattern did not compile: never matches
-  return m:test(name)
+
+  local memo = rule._memo
+  if memo then
+    local v = memo[name]
+    if v == YES then return true end
+    if v == NO  then return false end
+    if v == BUDGET then return false, 'budget' end
+  else
+    memo = {}
+    rule._memo, rule._memon = memo, 0
+  end
+
+  local hit, why = m:test(name)
+  if rule._memon < MEMO_MAX then
+    memo[name] = hit and YES or (why == 'budget' and BUDGET or NO)
+    rule._memon = rule._memon + 1
+  end
+  return hit, why
 end
 
 return M
