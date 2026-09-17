@@ -343,6 +343,32 @@ do
   check(pushes == pops, 'and the same number of style colours',
         pushes .. ' pushed, ' .. pops .. ' popped')
 end
+do -- an unselected tab is painted like a button, so the strip and the action
+   -- bar below it read as one surface
+  local BUTTON, HOVER = 0x224466FF, 0x336699FF
+  local pushed = {}
+  local ImGui
+  ImGui = mockimgui.new{ scripted = {
+    GetStyleColor = function(_, idx)
+      if idx == ImGui.Col_Button then return BUTTON end
+      if idx == ImGui.Col_ButtonHovered then return HOVER end
+      return 0x808080FF
+    end,
+    PushStyleColor = function(_, idx, col) pushed[idx] = col end,
+  } }
+  theme.init(ImGui, { 'ctx' })
+  theme.push(14); theme.pop()
+
+  check(pushed[ImGui.Col_Tab] == BUTTON,
+        'an unselected tab takes the button background',
+        string.format('%x', pushed[ImGui.Col_Tab] or 0))
+  check(pushed[ImGui.Col_TabHovered] == HOVER, 'hover follows too')
+  check(pushed[ImGui.Col_TabDimmed] == BUTTON,
+        'and it survives the window losing focus')
+  check(pushed[ImGui.Col_TabSelected] == nil,
+        'the SELECTED tab is left alone -- the table header takes its colour')
+end
+
 do -- pop with nothing pushed must be harmless, so an error mid-frame cannot
    -- leave the style stack corrupted
   local pops = 0
