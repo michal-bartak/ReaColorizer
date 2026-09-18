@@ -159,6 +159,21 @@ local function options_popup(FS)
   rv, v = ImGui.SliderInt(ctx, 'Work budget (ms)', math.floor(o.cold_budget_ms), 1, 50)
   if rv then o.cold_budget_ms = v; app.mark_dirty(true) end
 
+  ImGui.SetNextItemWidth(ctx, FS * 10)
+  rv, v = ImGui.SliderInt(ctx, 'Rescan items at most every (s)',
+                          math.floor(o.cold_interval), 0, 60)
+  if rv then o.cold_interval = v; app.mark_dirty(true) end
+  if ImGui.IsItemHovered(ctx) then
+    ImGui.SetTooltip(ctx,
+      'Tracks are checked on every change. Items and regions are\n' ..
+      'much more numerous, so they are only re-read when something\n' ..
+      'says they need it -- one appeared or vanished, a track\n' ..
+      'changed, or this long has passed.\n\n' ..
+      'It is the delay before an item RENAMED in place is noticed;\n' ..
+      'nothing else waits on it. 0 re-reads everything on every\n' ..
+      'change, which is slow on a large project.')
+  end
+
   theme.section('Window', true)
   ImGui.SetNextItemWidth(ctx, FS * 10)
   rv, v = ImGui.SliderInt(ctx, 'Text size', math.floor(o.font_size), 8, 32)
@@ -243,7 +258,7 @@ local function auto_button(FS, w)
       ImGui.SetTooltip(ctx, app.auto_command_id()
         and 'Background auto-colouring is off.\nClick to start it.'
         or  'Background auto-colouring is off.\n\nRun the action\n' ..
-            'MB_NameColorizer_AutoToggle.lua once; after that\n' ..
+            'MXM_NameColorizer_AutoToggle.lua once; after that\n' ..
             'this button can start and stop it.')
     else
       ImGui.SetTooltip(ctx, 'Background auto-colouring is running.\n' ..
@@ -391,6 +406,18 @@ function M.draw(FS)
             (rulesmod.KIND_NOUN[kind] or '') .. ' rules yet -- add one below.')
         elseif on == 0 then
           ImGui.TextColored(ctx, rgba(COL_WARN), 'Every rule on this tab is switched off.')
+        end
+
+        -- The selected rule's advisory notes. They used to sit under the name
+        -- tester; that panel is a scratch pad now, and these belong beside the
+        -- rule they are about anyway.
+        local sr = st.sel_id and app.rule_by_id(st.sel_id)
+        if sr and sr.kind == kind then
+          for _, wtext in ipairs(rulesmod.warnings(sr, st.cfg and st.cfg.options)) do
+            ImGui.TextColored(ctx, rgba(COL_WARN), '- ')
+            ImGui.SameLine(ctx, 0, 0)
+            ImGui.TextWrapped(ctx, wtext)
+          end
         end
 
         ImGui.Indent(ctx, theme.TAB_INSET)  -- restore for the strip itself

@@ -412,26 +412,46 @@ end
 
 -------------------------------------------------------------------- commit
 --- Write the planned ops. The ONLY function in the project that changes colours.
--- @param options { no_undo = bool }   no_undo is for the auto loop, which must
---                not add an undo point every time a track is renamed.
--- @return written, failures
+-- @param options { no_undo = bool, from = int, deadline = number }
+--        no_undo  -- for the auto loop, which must not add an undo point every
+--                    time a track is renamed.
+--        from     -- index to start at, so a queue can be drained over several
+--                    calls without copying the remainder each time.
+--        deadline -- an absolute reaper.time_precise() value to stop at. The
+--                    clock is read once per WRITE, which is the only thing here
+--                    that costs anything; an earlier version budgeted the loop
+--                    that merely copied op references into a batch, where 4 ms
+--                    buys about fifteen thousand iterations, so the whole queue
+--                    went out in one tick and the chunking never happened.
+-- Sets `op.done` on every op it attempted, true when the write landed. The auto
+-- loop needs that to record what it actually put there rather than what it
+-- intended to.
+-- @return written, failures, next_index
 function M.commit(ops, desc, options)
-  if #ops == 0 then return 0, {} end
   options = options or {}
+  local n    = #ops
+  local from = options.from or 1
+  if from > n then return 0, {}, from end
 
-  local big = #ops > 50
+  local deadline = options.deadline
+  local big = (n - from) >= 50
   if big then reaper.PreventUIRefresh(1) end
   if not options.no_undo then reaper.Undo_BeginBlock() end
 
   local mask, written, failures = 0, 0, {}
-  for _, op in ipairs(ops) do
+  local i = from
+  while i <= n do
+    local op = ops[i]
     local ok, err = targets.set(op.entry, op.rgb)
+    op.done = ok == true
     if ok then
       written = written + 1
       mask = mask | (KIND_UNDO[op.entry.kind] or 0)
     elseif err then
       failures[#failures + 1] = err
     end
+    i = i + 1
+    if deadline and i <= n and reaper.time_precise() >= deadline then break end
   end
 
   if not options.no_undo then
@@ -446,7 +466,7 @@ function M.commit(ops, desc, options)
     reaper.TrackList_AdjustWindows(false)
   end
 
-  return written, failures
+  return written, failures, i
 end
 
 --------------------------------------------------------------- convenience

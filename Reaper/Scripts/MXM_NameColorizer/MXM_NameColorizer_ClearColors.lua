@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_ClearColors.lua
+  MXM_NameColorizer_ClearColors.lua
   Reset colours to default.
 
   Two scopes are offered here:

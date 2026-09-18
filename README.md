@@ -23,13 +23,13 @@ actions you want in *Actions → Show action list → New action → Load ReaScr
 
 | Script | What it does |
 |---|---|
-| `MB_NameColorizer_GUI.lua` | the configuration window |
-| `MB_NameColorizer_ApplyAll.lua` | colour the whole project, one undo point |
-| `MB_NameColorizer_ApplySelection.lua` | colour the selected tracks and items |
-| `MB_NameColorizer_ClearColors.lua` | reset colours to default |
-| `MB_NameColorizer_AutoToggle.lua` | start/stop background auto-colouring |
-| `MB_NameColorizer_Dump.lua` | read-only diagnostic listing |
-| `MB_NameColorizer_RunTests.lua` | self-test, prints to the console |
+| `MXM_NameColorizer_GUI.lua` | the configuration window |
+| `MXM_NameColorizer_ApplyAll.lua` | colour the whole project, one undo point |
+| `MXM_NameColorizer_ApplySelection.lua` | colour the selected tracks and items |
+| `MXM_NameColorizer_ClearColors.lua` | reset colours to default |
+| `MXM_NameColorizer_AutoToggle.lua` | start/stop background auto-colouring |
+| `MXM_NameColorizer_Dump.lua` | read-only diagnostic listing |
+| `MXM_NameColorizer_RunTests.lua` | self-test, prints to the console |
 
 ## Rules
 
@@ -167,7 +167,7 @@ Two things to know about gradients:
 
 ## Auto-apply
 
-`MB_NameColorizer_AutoToggle.lua` starts a background loop; run it again to
+`MXM_NameColorizer_AutoToggle.lua` starts a background loop; run it again to
 stop. The toolbar button lights while it runs.
 
 It is built to stay out of your way:
@@ -180,20 +180,34 @@ It is built to stay out of your way:
 * It writes nothing when nothing changed, and pauses entirely while recording.
 * Tracks are swept immediately; items and regions follow once the project has
   settled, in time-budgeted chunks.
+* **It tries hard not to re-read your project.** REAPER reports one
+  project-wide "something changed" counter, so a fader move arrives looking
+  exactly like a rename. Tracks are re-read on every change (a rename is only
+  visible by reading names) but re-planned only when that reading actually
+  differs. Items and regions, of which there are far more, are re-read only when
+  one appeared or vanished, when a track changed, or when
+  **Rescan items at most every (s)** has passed — 5 s by default, and the only
+  thing waiting on it is an item *renamed in place*, which nothing cheaper can
+  see. Set it to 0 to re-read everything on every change.
 
-**Apply now** (from the window or the action) tells the background loop to drop
-those marks, so the rules take every object back. That is the way out if you
+Editing a rule does not repaint the project, and neither does clicking around
+in it afterwards — the edit is held until an object actually changes, and then
+applied to everything at once so the project is never half on the old rules.
+**Apply now** is the way to commit an edit immediately.
+
+**Apply now** (from the window or the action) also tells the background loop to
+drop those marks, so the rules take every object back. That is the way out if you
 have hand-coloured something and want the rules to own it again.
 
 Opening the configuration window does **not** stop or pause the background loop.
 The window shows its status and has its own Pause button; the loop itself is
 started and stopped only by the `AutoToggle` action.
 
-Set the ExtState `MB_NameColorizer` / `auto_debug` to `1` for a console readout.
+Set the ExtState `MXM_NameColorizer` / `auto_debug` to `1` for a console readout.
 
 ## Clearing colours
 
-`MB_NameColorizer_ClearColors.lua` offers two scopes: the selection, or
+`MXM_NameColorizer_ClearColors.lua` offers two scopes: the selection, or
 everything the current rules match. Clearing *every* custom colour in a project
 is only available from the GUI, where it can be confirmed properly.
 
@@ -282,10 +296,10 @@ Three read-mostly helpers, useful when a colour is not what you expected:
 
 | Script | What it tells you |
 |---|---|
-| `MB_NameColorizer_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
-| `MB_NameColorizer_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
-| `MB_NameColorizer_TakeColorProbe.lua` | Whether your REAPER displays take colours over item colours |
-| `MB_NameColorizer_MakeTestProject.lua` | Builds a scratch project covering the awkward cases, in a new tab |
+| `MXM_NameColorizer_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
+| `MXM_NameColorizer_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
+| `MXM_NameColorizer_TakeColorProbe.lua` | Whether your REAPER displays take colours over item colours |
+| `MXM_NameColorizer_MakeTestProject.lua` | Builds a scratch project covering the awkward cases, in a new tab |
 
 ## Known limitations
 
@@ -312,7 +326,7 @@ Three read-mostly helpers, useful when a colour is not what you expected:
   carry colours, and because take colours travel with a copy/paste, a stale one
   follows an item onto a track it no longer belongs to.
   If you deliberately colour takes, do not use this tool on items.
-  `MB_NameColorizer_TakeColorProbe.lua` reports what your setup displays.
+  `MXM_NameColorizer_TakeColorProbe.lua` reports what your setup displays.
 * **The master track is not supported.** REAPER does not honour a custom colour
   on it — not through this tool, and not through REAPER's own track-colour
   action — so the master is never scanned and never coloured. An earlier build
@@ -331,16 +345,20 @@ Three read-mostly helpers, useful when a colour is not what you expected:
 ## Repository layout
 
 ```
-MB_NameColorizer_*.lua   actions you add to REAPER's Action List
-lib/                     the engine; lib/gui/ is the only part that uses ImGui
-tests/                   runs outside REAPER against a mocked API
-docs/DECISIONS.md        why it is built this way, and what was tried first
-docs/RESEARCH.md         verified external facts: SWS, ReaImGui, REAPER prefs
+NameColorizer/            everything ReaPack installs
+  MXM_NameColorizer.lua   ReaPack manifest: metadata only, installs nothing
+  MXM_NameColorizer_*.lua actions you add to REAPER's Action List
+  lib/                    the engine; lib/gui/ is the only part that uses ImGui
+dev/                      author-only probes, deliberately not shipped
+tests/                    runs outside REAPER against a mocked API
+docs/DECISIONS.md         why it is built this way, and what was tried first
+docs/RESEARCH.md          verified external facts: SWS, ReaImGui, REAPER prefs
+index.xml                 generated by reapack-index; never edit by hand
 ```
 
 ## Tests
 
-`MB_NameColorizer_RunTests.lua` runs from REAPER's Action List and prints a
+`MXM_NameColorizer_RunTests.lua` runs from REAPER's Action List and prints a
 summary to the ReaScript console. It touches no project state and never writes
 your config.
 

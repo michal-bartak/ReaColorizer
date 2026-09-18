@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_MakeTestProject.lua -- build a scratch project that exercises
+  MXM_NameColorizer_MakeTestProject.lua -- build a scratch project that exercises
   every awkward case, in a NEW PROJECT TAB so nothing you have open is touched.
 
   Covers: a folder with two children, a nested folder closing two levels at once,
@@ -78,7 +78,7 @@ reaper.Undo_EndBlock('Name Colorizer test project', -1)
 reaper.ShowMessageBox(
   'Test project created in a new tab.\n\n' ..
   'Now run:\n' ..
-  '  1. MB_NameColorizer_Dump.lua      (read-only)\n' ..
-  '  2. MB_NameColorizer_ApplyAll.lua  (then Cmd-Z to undo)\n' ..
-  '  3. MB_NameColorizer_ApplyAll.lua  again -- it must say "already up to date"',
+  '  1. MXM_NameColorizer_Dump.lua      (read-only)\n' ..
+  '  2. MXM_NameColorizer_ApplyAll.lua  (then Cmd-Z to undo)\n' ..
+  '  3. MXM_NameColorizer_ApplyAll.lua  again -- it must say "already up to date"',
   'Name Colorizer', 0)

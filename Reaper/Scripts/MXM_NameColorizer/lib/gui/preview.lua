@@ -5,8 +5,8 @@
   with the real first-match-wins resolution, so it is not an approximation of
   what Apply would do -- it is the same code path.
 
-  Alongside it sits a tester: type a name, see whether the selected rule matches
-  it, where, and what it captured.
+  Alongside it sits a tester: a scratch pad with its own mode, pattern and
+  name, for working an expression out before you commit it to a rule.
 ]]
 
 local rulesmod = require 'rules'
@@ -29,7 +29,7 @@ local COL_WARN = 0xD9A441
 
 local KIND_TAG = { track = 'T', item = 'I', region = 'R', marker = 'M' }
 
-local last_subject, last_sel
+local last_mode, last_pattern, last_subject
 
 ------------------------------------------------------------------ the list
 --- The list follows the selected tab: on the Items tab you see items, and so
@@ -160,46 +160,47 @@ function M.draw_list(FS, w, h)
 end
 
 --------------------------------------------------------------------- tester
+--- A scratch pad for working an expression out: its own mode, its own
+--- pattern, its own name to try them on.
+---
+--- It deliberately knows nothing about the selected rule or the project. It
+--- used to test the selected rule against a typed name, which meant you could
+--- not try anything out without first committing it to a rule -- and editing
+--- the rule to experiment was the very thing you wanted to avoid.
+local MODES = {
+  { value = 'substring', label = 'contains' },
+  { value = 'glob',      label = 'glob' },
+  { value = 'regex',     label = 'regex' },
+}
+
 function M.draw_tester(FS, w, h)
   local st = app.st
   if not ImGui.BeginChild(ctx, 'tester', w, h, ImGui.ChildFlags_Borders) then return end
+  local t = st.tester
 
-  local r = st.sel_id and app.rule_by_id(st.sel_id)
-  theme.section('Name tester')
+  theme.section('Pattern tester')
 
-  if not r then
-    ImGui.TextColored(ctx, rgba(COL_DIM),
-      'Select a rule (click its handle on the left) to test it here.')
-    ImGui.EndChild(ctx)
-    return
-  end
+  local picked = theme.segmented('tmode', MODES, t.mode)
+  if picked then t.mode = picked end
 
-  ImGui.Text(ctx, (r.label ~= '' and r.label or '(unnamed rule)'))
-  ImGui.SameLine(ctx)
-  ImGui.TextColored(ctx, rgba(COL_DIM),
-    string.format('[%s%s]', rulesmod.MODE_LABEL[r.mode], r.ci and ', ignore case' or ''))
+  ImGui.Spacing(ctx)
+  ImGui.SetNextItemWidth(ctx, -1)
+  local rvp, pat = ImGui.InputTextWithHint(ctx, '##pattern', 'pattern', t.pattern)
+  if rvp then t.pattern = pat end
 
   ImGui.SetNextItemWidth(ctx, -1)
-  local rv, subj = ImGui.InputText(ctx, '##subject', st.tester.subject)
-  if rv then st.tester.subject = subj end
-
-  if ImGui.SmallButton(ctx, 'Use selected track name') then
-    local tr = reaper.GetSelectedTrack(0, 0)
-    if tr then
-      local ok, nm = reaper.GetSetMediaTrackInfo_String(tr, 'P_NAME', '', false)
-      st.tester.subject = (ok and nm) or ''
-    end
-  end
+  local rvs, subj = ImGui.InputTextWithHint(ctx, '##subject', 'a name to try it on', t.subject)
+  if rvs then t.subject = subj end
 
   -- Only re-run when something actually changed; a slow pattern must not be
   -- evaluated on every frame.
-  if st.tester.subject ~= last_subject or st.sel_id ~= last_sel then
-    last_subject, last_sel = st.tester.subject, st.sel_id
+  if t.pattern ~= last_pattern or t.mode ~= last_mode or t.subject ~= last_subject then
+    last_pattern, last_mode, last_subject = t.pattern, t.mode, t.subject
     app.run_tester()
   end
 
   ImGui.Spacing(ctx)
-  local res = st.tester.result
+  local res = t.result
 
   if not res then
     ImGui.TextColored(ctx, rgba(COL_DIM), '--')
@@ -216,7 +217,7 @@ function M.draw_tester(FS, w, h)
   elseif res.ok then
     ImGui.TextColored(ctx, rgba(COL_OK), 'Match')
     if res.span then
-      local s = st.tester.subject
+      local s = t.subject
       local a, b = res.span[1], res.span[2]
       ImGui.Text(ctx, 'matched: ')
       ImGui.SameLine(ctx, 0, 0)
@@ -238,18 +239,6 @@ function M.draw_tester(FS, w, h)
     end
   else
     ImGui.TextColored(ctx, rgba(COL_DIM), 'No match')
-  end
-
-  -- Advisory warnings about how the rule is built.
-  local warns = rulesmod.warnings(r, app.st.cfg and app.st.cfg.options)
-  if #warns > 0 then
-    ImGui.Spacing(ctx)
-    theme.section('Heads up')
-    for _, wtext in ipairs(warns) do
-      ImGui.TextColored(ctx, rgba(COL_WARN), '- ')
-      ImGui.SameLine(ctx, 0, 0)
-      ImGui.TextWrapped(ctx, wtext)
-    end
   end
 
   ImGui.EndChild(ctx)

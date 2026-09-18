@@ -124,34 +124,54 @@ end
 
 ---------------------------------------------------------------- tester
 do
-  local rr = app.st.cfg.rules.track[1]
-  rr.mode, rr.pattern, rr.ci = 'regex', '^(\\d+)_(\\w+)$', true
-  app.st.sel_id = rr.id
-  app.st.tester.subject = '01_Kick'
+  -- The tester is a scratch pad: its own mode and pattern, nothing to do with
+  -- the selected rule.
+  local t = app.st.tester
+  app.st.sel_id = nil
+  t.mode, t.pattern, t.subject = 'regex', '^(\\d+)_(\\w+)$', '01_Kick'
   app.run_tester()
-  local res = app.st.tester.result
-  check(res and res.ok, 'tester reports a match')
+  local res = t.result
+  check(res and res.ok, 'tester reports a match with no rule selected')
   check(res.caps and res.caps[1] == '01' and res.caps[2] == 'Kick',
         'tester returns capture groups')
   check(res.span and res.span[1] == 1, 'tester returns the matched span')
 
-  app.st.tester.subject = 'nope'
+  t.subject = 'nope'
   app.run_tester()
-  check(app.st.tester.result.ok == false, 'tester reports a non-match')
+  check(t.result.ok == false, 'tester reports a non-match')
 
-  rr.pattern = '(unclosed'
+  t.pattern = '(unclosed'
   app.run_tester()
-  check(app.st.tester.result.err ~= nil, 'tester reports an invalid pattern')
-  check(app.st.tester.result.pos ~= nil, 'tester reports the error position')
+  check(t.result.err ~= nil, 'tester reports an invalid pattern')
+  check(t.result.pos ~= nil, 'tester reports the error position')
 
-  rr.pattern = '^(a+)+$'
-  app.st.tester.subject = string.rep('a', 40) .. '!'
+  t.pattern = '^(a+)+$'
+  t.subject = string.rep('a', 40) .. '!'
   app.run_tester()
-  check(app.st.tester.result.budget == true, 'tester flags a pattern that is too slow')
+  check(t.result.budget == true, 'tester flags a pattern that is too slow')
 
-  rr.pattern = ''
+  t.pattern = ''
   app.run_tester()
-  check(app.st.tester.result.note ~= nil, 'tester explains an empty pattern')
+  check(t.result.note ~= nil, 'tester explains an empty pattern')
+
+  -- The other two modes report a span as well, so the match is highlighted
+  -- whatever mode you are in.
+  t.mode, t.pattern, t.subject = 'substring', 'Gtr', '01 Gtr L'
+  app.run_tester()
+  check(t.result.ok and t.result.span[1] == 4 and t.result.span[2] == 6,
+        'substring mode reports where it matched')
+
+  t.mode, t.pattern, t.subject = 'glob', '*Gtr*', '01 Gtr L'
+  app.run_tester()
+  check(t.result.ok and t.result.span ~= nil, 'glob mode matches and reports a span')
+
+  -- Changing the selected rule must not disturb any of it.
+  local rr = app.st.cfg.rules.track[1]
+  rr.mode, rr.pattern = 'regex', '^never$'
+  app.st.sel_id = rr.id
+  app.run_tester()
+  check(t.result.ok == true, 'the selected rule has no say in the result')
+  app.st.sel_id = nil
 end
 
 ---------------------------------------------------------------- auto status

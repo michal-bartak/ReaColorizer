@@ -15,10 +15,10 @@ into CI or a pre-commit hook.
 
 | Suite | Runs | Covers |
 |---|---|---|
-| `MB_NameColorizer_RunTests.lua` (repo root) | in REAPER **and** standalone | regex engine, matcher, predicates, colours, JSON, rules, config, the whole `apply` decision layer |
+| `MXM_NameColorizer_RunTests.lua` (repo root) | in REAPER **and** standalone | regex engine, matcher, predicates, colours, JSON, rules, config, the whole `apply` decision layer |
 | `integration.lua` | mock REAPER | the real action scripts end to end — Apply, Clear, selection scope, folder policies, take-colour masking, the old-REAPER marker fallback |
 | `autoloop.lua` | mock REAPER | the background engine: idle cost, renames, the "don't fight a hand-picked colour" rule, cache invalidation, recording pause |
-| `gui.lua` | mock REAPER | `gui/app.lua` — config load/save debounce, undo stack, preview tallies, the name tester |
+| `gui.lua` | mock REAPER | `gui/app.lua` — config load/save debounce, undo stack, preview tallies, the pattern tester |
 | `render.lua` | mock REAPER + stub ImGui | renders real frames: every drawing path executes, style stack balances, tabs, preview bucketing, theme behaviour |
 | `fuzz_gen.py` + `fuzz_run.lua` | standalone | differential fuzz of the regex engine against Python's `re`, ~4000 random patterns per seed |
 

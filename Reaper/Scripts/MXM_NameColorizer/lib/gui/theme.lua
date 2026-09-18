@@ -42,6 +42,11 @@ M.FRAME_BG_ALPHA  = 0.60   -- backgrounds of checkboxes, text fields, combos
 M.UNIFY_BUTTONS   = false  -- also drag buttons down to that background?
                            -- off: buttons keep the theme's own colour, which
                            -- matches the tabs
+M.UNIFY_TABS      = true   -- give an UNSELECTED tab the button background, so
+                           -- the tab strip and the action bar below it are the
+                           -- same surface. The selected tab is left alone --
+                           -- it has to stay distinct, and the table's header
+                           -- row takes its colour.
 M.CHECKBOX_SCALE  = 0.62   -- x the normal control height; the tick box only
 M.SWATCH_GAP      = 4      -- logical px between the two colour swatches and [+]/[x]
 
@@ -92,6 +97,17 @@ local function dim(idx, alpha)
   ncols = ncols + 1
 end
 
+--- Take one style colour's hue from another, keeping the alpha maths in one
+--- place. Reads the CURRENT value, so a colour already pushed this frame is
+--- what gets copied -- which is how the tabs follow the buttons even when the
+--- buttons have themselves been dragged onto the frame background.
+local function copy(dst, src, alpha)
+  local col = ImGui.GetStyleColor(ctx, src)
+  local a   = (col & 0xFF) / 255
+  ImGui.PushStyleColor(ctx, dst, (col & ~0xFF) | math.floor(a * (alpha or 1) * 255))
+  ncols = ncols + 1
+end
+
 --- Push the whole look. Call once per frame, before Begin.
 function M.push(FS)
   nvars, ncols = 0, 0
@@ -121,15 +137,19 @@ function M.push(FS)
   dim(ImGui.Col_FrameBgActive,  M.FRAME_BG_ALPHA)
 
   if M.UNIFY_BUTTONS then
-    local function copy(dst, src, alpha)
-      local col = ImGui.GetStyleColor(ctx, src)
-      local a   = (col & 0xFF) / 255
-      ImGui.PushStyleColor(ctx, dst, (col & ~0xFF) | math.floor(a * alpha * 255))
-      ncols = ncols + 1
-    end
     copy(ImGui.Col_Button,        ImGui.Col_FrameBg,        M.FRAME_BG_ALPHA)
     copy(ImGui.Col_ButtonHovered, ImGui.Col_FrameBgHovered, M.FRAME_BG_ALPHA)
     copy(ImGui.Col_ButtonActive,  ImGui.Col_FrameBgActive,  M.FRAME_BG_ALPHA)
+  end
+
+  -- An unselected tab is a button you have not pressed, so give it the button's
+  -- background. Col_TabDimmed is the same tab with the window unfocused; left
+  -- at the theme's own value, the strip changed colour every time focus moved.
+  -- This runs AFTER the block above on purpose -- see copy().
+  if M.UNIFY_TABS then
+    copy(ImGui.Col_Tab,        ImGui.Col_Button)
+    copy(ImGui.Col_TabHovered, ImGui.Col_ButtonHovered)
+    copy(ImGui.Col_TabDimmed,  ImGui.Col_Button)
   end
 
   dim(ImGui.Col_TableBorderLight,  M.GRID_ALPHA)
@@ -343,6 +363,37 @@ function M.color_swatch(label, rgb)
   ImGui.SetNextItemWidth(ctx, ImGui.GetFrameHeight(ctx))
   return ImGui.ColorEdit3(ctx, label, rgb,
                           ImGui.ColorEditFlags_NoInputs | ImGui.ColorEditFlags_NoLabel)
+end
+
+--- A row of mutually exclusive buttons. ImGui has no segmented control, so
+--- the chosen one is drawn in the active-button colour and the others are left
+--- at rest. Every button gets the width of the widest label, otherwise a row
+--- of them comes out ragged.
+--- @param items array of { value = ..., label = ... }
+--- @return the value that was clicked, or nil
+function M.segmented(id, items, current)
+  local picked
+  local sel = ImGui.GetStyleColor(ctx, ImGui.Col_ButtonActive)
+
+  local w = 0
+  for _, it in ipairs(items) do
+    local tw = ImGui.CalcTextSize(ctx, it.label)
+    if tw > w then w = tw end
+  end
+  w = w + 2 * px(ImGui.GetFontSize(ctx) * M.PAD_X)
+
+  for i, it in ipairs(items) do
+    if i > 1 then ImGui.SameLine(ctx, 0, M.SWATCH_GAP) end
+    local on = it.value == current
+    if on then
+      ImGui.PushStyleColor(ctx, ImGui.Col_Button, sel)
+      ImGui.PushStyleColor(ctx, ImGui.Col_ButtonHovered, sel)
+    end
+    if ImGui.Button(ctx, it.label .. '##' .. id .. i, w, 0) then picked = it.value end
+    if on then ImGui.PopStyleColor(ctx, 2) end
+  end
+
+  return picked
 end
 
 --- Put the next widget on the same line, with the swatch-row gap.

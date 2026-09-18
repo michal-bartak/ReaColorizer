@@ -1,8 +1,8 @@
 --[[
-  MB_NameColorizer_RunTests.lua -- assertions for the matching layer.
+  MXM_NameColorizer_RunTests.lua -- assertions for the matching layer.
 
   Runs either inside REAPER (results go to the ReaScript console) or standalone
-  from a terminal (`lua MB_NameColorizer_RunTests.lua`), which is much faster to
+  from a terminal (`lua MXM_NameColorizer_RunTests.lua`), which is much faster to
   iterate on. Nothing here touches project state.
 ]]
 
@@ -352,6 +352,46 @@ check(MT.test(rules[1], 'Kick In') == true,  'prepared regex rule matches')
 check(MT.test(rules[2], 'sub bass') == true, 'prepared substring rule matches')
 check(MT.test(rules[3], 'anything') == false, 'broken rule never matches')
 check(MT.test(rules[4], 'anything') == true,  'empty pattern matches any name')
+
+-- The result memo. It is keyed by name alone, so the thing that can go wrong is
+-- an edited rule still answering from the old pattern's cache.
+do
+  local r = { mode = 'substring', pattern = 'bass', ci = false }
+  MT.prepare({ r })
+  check(MT.test(r, 'sub bass') == true,  'memo: first answer')
+  check(MT.test(r, 'sub bass') == true,  'memo: same answer on the second ask')
+  check(MT.test(r, 'guitar')   == false, 'memo: a miss is remembered as a miss')
+  check(r._memon == 2, 'memo holds one entry per distinct name', tostring(r._memon))
+
+  -- prepare() alone must NOT throw the memo away: it runs on every sweep, which
+  -- is precisely when the memo has to survive to be worth anything.
+  MT.prepare({ r })
+  check(r._memo ~= nil and r._memon == 2, 'an ordinary sweep keeps the memo')
+
+  -- ...but an edited pattern must, or the rule answers from the old one.
+  r.pattern = 'guitar'
+  MT.prepare({ r })
+  check(r._memo == nil, 'editing the pattern drops the memo')
+  check(MT.test(r, 'sub bass') == false, 'and the new pattern is what answers')
+  check(MT.test(r, 'guitar')   == true,  'both ways round')
+
+  -- clear_cache() is what every rule change goes through, so it must invalidate
+  -- too -- it recompiles, and the memo is only valid for one compiled matcher.
+  MT.prepare({ r })
+  local filled = r._memon
+  MT.clear_cache()
+  MT.prepare({ r })
+  check(filled > 0 and r._memo == nil, 'clear_cache drops the memo as well')
+
+  -- a pattern that gives up on the step budget must stay reported as such,
+  -- rather than being remembered as a plain no-match
+  local slow = { mode = 'regex', pattern = '(a+)+$', ci = false }
+  MT.prepare({ slow })
+  local hit1, why1 = MT.test(slow, string.rep('a', 40) .. 'b')
+  local hit2, why2 = MT.test(slow, string.rep('a', 40) .. 'b')
+  check(hit1 == false and why1 == 'budget', 'budget is reported')
+  check(hit2 == false and why2 == 'budget', 'and survives the memo', tostring(why2))
+end
 
 --=============================================================== predicates
 local PR = require 'predicates'

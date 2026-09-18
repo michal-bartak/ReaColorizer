@@ -24,6 +24,8 @@ local M = {}
 local SECT = config.EXT_SECTION
 local SAVE_DEBOUNCE   = 0.5     -- seconds after the last edit
 local PREVIEW_SETTLE  = 0.3     -- seconds after the last keystroke
+local ENTRIES_SETTLE  = 0.25    -- seconds between project scans
+local SWS_SETTLE      = 5       -- seconds between reads of the SWS ini
 local UNDO_DEPTH      = 20
 
 local st = {
@@ -41,7 +43,7 @@ local st = {
   undo = {},
   toast = nil, toast_at = 0,
 
-  tester = { subject = 'Kick In', result = nil },
+  tester = { mode = 'substring', pattern = '', subject = '', result = nil },
 }
 
 M.st = st
@@ -113,11 +115,22 @@ function M.flush(force)
 end
 
 ------------------------------------------------------------ project scanning
---- Re-read the project, but only when it has actually changed.
+--- Re-read the project, but only when it has actually changed -- and not more
+--- than a few times a second even then.
+---
+--- The change counter alone is not enough of a brake. Dragging an item bumps it
+--- on every frame, and this scan reads a name, a GUID and a colour for every
+--- object in the project, so the window was re-reading the whole project at
+--- frame rate for as long as the mouse was moving. The auto-apply loop is doing
+--- its own scanning at the same time.
 function M.refresh_entries(force)
-  local scc = reaper.GetProjectStateChangeCount(0)
-  if not force and scc == st.entries_scc then return false end
-  st.entries_scc = scc
+  local now = reaper.time_precise()
+  if not force then
+    if now - st.entries_at < ENTRIES_SETTLE then return false end
+    if reaper.GetProjectStateChangeCount(0) == st.entries_scc then return false end
+  end
+  st.entries_at  = now
+  st.entries_scc = reaper.GetProjectStateChangeCount(0)
   st.entries = targets.all(0, {})
   st.preview_dirty = true
   return true
@@ -260,7 +273,7 @@ end
 function M.toggle_auto()
   local cmd = M.auto_command_id()
   if not cmd then
-    M.toast('Run the action MB_NameColorizer_AutoToggle.lua once first -- ' ..
+    M.toast('Run the action MXM_NameColorizer_AutoToggle.lua once first -- ' ..
             'after that this button can start and stop it.')
     return false
   end
@@ -359,18 +372,19 @@ function M.clear_colors(scope)
 end
 
 -------------------------------------------------------------------- tester
---- Run the selected rule's pattern against the tester's subject string.
+--- Run the tester's own pattern against its own subject.
+---
+--- The tester is a scratch pad, deliberately unaware of the selected rule and
+--- of the project: you work an expression out here, then type it into a rule.
 function M.run_tester()
-  local r = st.sel_id and M.rule_by_id(st.sel_id)
   local t = st.tester
-  if not r then t.result = nil; return end
 
-  if r.pattern == '' then
+  if t.pattern == '' then
     t.result = { ok = true, note = 'empty pattern: matches any name' }
     return
   end
 
-  local m, err, pos = matcher.compile(r.mode, r.pattern, r.ci)
+  local m, err, pos = matcher.compile(t.mode, t.pattern, false)
   if not m then
     t.result = { err = err, pos = pos }
     return
@@ -379,20 +393,35 @@ function M.run_tester()
   local hit, why = m:test(t.subject)
   local res = { ok = hit, budget = (why == 'budget') }
 
-  -- For regex, also show the matched span and any capture groups.
-  if r.mode == 'regex' and m.rx then
-    local a, b, caps = m.rx:find(t.subject)
-    if a then res.span = { a, b }; res.caps = caps end
+  -- Where it matched, and what it captured. Glob compiles to a regex too, so
+  -- both of those modes can show a span; substring finds its own.
+  if hit then
+    if m.rx then
+      local a, b, caps = m.rx:find(t.subject)
+      if a then res.span = { a, b }; res.caps = caps end
+    else
+      local a, b = string.find(t.subject, t.pattern, 1, true)
+      if a then res.span = { a, b } end
+    end
   end
   t.result = res
 end
 
 ------------------------------------------------------------------- warnings
+-- The answer lives in a file on disk, and the banner asks for it on every
+-- frame. Nobody toggles SWS Auto Color mid-drag, so re-reading it once every
+-- few seconds is as live as this needs to be.
+local sws_text, sws_at = nil, nil
+
 function M.sws_warning()
+  local now = reaper.time_precise()
+  if sws_at and now - sws_at < SWS_SETTLE then return sws_text end
+  sws_at = now
+
   local clash, keys = entrylib.sws_conflict()
-  if not clash then return nil end
-  return 'SWS Auto Color is enabled (' .. table.concat(keys, ', ') ..
-         ') and will fight with this tool.'
+  sws_text = clash and ('SWS Auto Color is enabled (' .. table.concat(keys, ', ') ..
+                        ') and will fight with this tool.') or nil
+  return sws_text
 end
 
 return M

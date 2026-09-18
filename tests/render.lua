@@ -343,6 +343,32 @@ do
   check(pushes == pops, 'and the same number of style colours',
         pushes .. ' pushed, ' .. pops .. ' popped')
 end
+do -- an unselected tab is painted like a button, so the strip and the action
+   -- bar below it read as one surface
+  local BUTTON, HOVER = 0x224466FF, 0x336699FF
+  local pushed = {}
+  local ImGui
+  ImGui = mockimgui.new{ scripted = {
+    GetStyleColor = function(_, idx)
+      if idx == ImGui.Col_Button then return BUTTON end
+      if idx == ImGui.Col_ButtonHovered then return HOVER end
+      return 0x808080FF
+    end,
+    PushStyleColor = function(_, idx, col) pushed[idx] = col end,
+  } }
+  theme.init(ImGui, { 'ctx' })
+  theme.push(14); theme.pop()
+
+  check(pushed[ImGui.Col_Tab] == BUTTON,
+        'an unselected tab takes the button background',
+        string.format('%x', pushed[ImGui.Col_Tab] or 0))
+  check(pushed[ImGui.Col_TabHovered] == HOVER, 'hover follows too')
+  check(pushed[ImGui.Col_TabDimmed] == BUTTON,
+        'and it survives the window losing focus')
+  check(pushed[ImGui.Col_TabSelected] == nil,
+        'the SELECTED tab is left alone -- the table header takes its colour')
+end
+
 do -- pop with nothing pushed must be harmless, so an error mid-frame cannot
    -- leave the style stack corrupted
   local pops = 0
@@ -866,12 +892,36 @@ do
   theme.SECTION_CASE = saved
 end
 
+------------------------------------------------- the tester is a scratch pad
+do
+  -- It draws with nothing selected, and offers its own mode buttons.
+  app.st.sel_id = nil
+  local ok, err, rec = frame()
+  check(ok, 'a frame with no rule selected draws', tostring(err))
+  for _, lbl in ipairs({ 'contains##tmode1', 'glob##tmode2', 'regex##tmode3' }) do
+    check(rec.labels[lbl], 'the tester offers the ' .. lbl:match('^%a+') .. ' button')
+  end
+  check(rec.labels['pattern'] and rec.labels['a name to try it on'],
+        'and its own pattern and name fields')
+
+  local pv = pathlib_read('lib/gui/preview.lua')
+  check(not pv:find('Use selected track name', 1, true),
+        'the "use the selected track" button is gone')
+  local body = pv:match('function M%.draw_tester.-\nend\n')
+  check(body and not body:find('sel_id', 1, true),
+        'and draw_tester never looks at the selection')
+  check(not pv:find('Heads up', 1, true),
+        'the rule warnings have left the tester panel')
+  check(pathlib_read('lib/gui/window.lua'):find('rulesmod.warnings', 1, true) ~= nil,
+        'and sit beside the rules they are about')
+end
+
 do -- the renamed panel headings
   local pv = pathlib_read('lib/gui/preview.lua')
   check(pv:find("theme.section('Objects preview')", 1, true) ~= nil,
         'the preview list is headed "Objects preview"')
-  check(pv:find("theme.section('Name tester')", 1, true) ~= nil,
-        'and the tester "Name tester"')
+  check(pv:find("theme.section('Pattern tester')", 1, true) ~= nil,
+        'and the tester "Pattern tester"')
   check(not pv:find('rules match right now', 1, true), 'the old wording is gone')
   check(not pv:find("'Try a name'", 1, true), 'and so is the old tester heading')
 

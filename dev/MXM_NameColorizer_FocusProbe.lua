@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_FocusProbe.lua -- what did you touch last?
+  MXM_NameColorizer_FocusProbe.lua -- what did you touch last?
 
   Read-only. Changes nothing; it only reports.
 

@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_ApplyAll.lua
+  MXM_NameColorizer_ApplyAll.lua
   Apply the rule set to every track, item, region and marker in the project.
   One undo point. Objects that already have the right colour are not rewritten.
 ]]

@@ -10,7 +10,7 @@
 set -uo pipefail
 
 TESTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export NC="$(dirname "$TESTS")"
+export NC="$(dirname "$TESTS")/NameColorizer"
 export SP="$TESTS/.tmp"
 
 # Find the mocks regardless of where this was invoked from. Without it the
@@ -30,7 +30,7 @@ run() {
 }
 
 echo "== unit (regex, matcher, colours, config, apply) =="
-( cd "$NC" && NC_TEST_DIR="$SP/cfgtest" lua MB_NameColorizer_RunTests.lua ) >"$SP/unit.out" 2>&1
+( cd "$NC" && NC_TEST_DIR="$SP/cfgtest" lua MXM_NameColorizer_RunTests.lua ) >"$SP/unit.out" 2>&1
 [ $? -eq 0 ] || rc=1
 tail -n 3 "$SP/unit.out"
 
