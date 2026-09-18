@@ -18,8 +18,19 @@ tracks, items *and* regions/markers in one ordered rule list, with regex.
 
 ## Install
 
-Copy the `NameColorizer` folder into your REAPER `Scripts` folder, then add the
-actions you want in *Actions → Show action list → New action → Load ReaScript*:
+Via ReaPack, which is the easy way. Import this repository once:
+
+```
+https://github.com/michal-bartak/ReaPack/raw/main/index.xml
+```
+
+In REAPER: *Extensions → ReaPack → Import repositories*, paste the URL, then
+*Browse packages* and install **Name Colorizer**. Every action below is added
+to the Action List for you, and updates arrive through ReaPack from then on.
+
+By hand instead: copy `Reaper/Scripts/MXM_NameColorizer` into your REAPER
+`Scripts` folder, then add the actions you want in *Actions → Show action
+list → New action → Load ReaScript*.
 
 | Script | What it does |
 |---|---|
@@ -29,6 +40,7 @@ actions you want in *Actions → Show action list → New action → Load ReaScr
 | `MXM_NameColorizer_ClearColors.lua` | reset colours to default |
 | `MXM_NameColorizer_AutoToggle.lua` | start/stop background auto-colouring |
 | `MXM_NameColorizer_Dump.lua` | read-only diagnostic listing |
+| `MXM_NameColorizer_WhyThisColour.lua` | explain one object: which rule claimed it, and why |
 | `MXM_NameColorizer_RunTests.lua` | self-test, prints to the console |
 
 ## Rules
@@ -347,10 +359,11 @@ Three read-mostly helpers, useful when a colour is not what you expected:
 ```
 Reaper/                     mirrors REAPER's resource path; this is what gets installed
   Scripts/MXM_NameColorizer/
-    MXM_NameColorizer.lua   ReaPack manifest: metadata only, installs nothing
     MXM_NameColorizer_*.lua actions you add to REAPER's Action List
     lib/                    the engine; lib/gui/ is the only part that uses ImGui
   Data/toolbar_icons/       the toolbar icon, at 1x, 150 and 200
+NameColorizer/              the ReaPack manifest, and nothing else; its directory
+                            name is what names the package's ReaPack category
 dev/                        author-only probes, deliberately not shipped
 tests/                      runs outside REAPER against a mocked API
 icon/                       icon.svg, the master every icon output is rendered from

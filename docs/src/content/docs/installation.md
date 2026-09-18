@@ -1,6 +1,6 @@
 ---
 title: Installation
-description: Copy the scripts in, add the actions, and check the one extension you need
+description: Install through ReaPack or by hand, and check the one extension you need
 ---
 
 ## Requirements
@@ -21,9 +21,25 @@ ReaImGui lives at [codeberg.org/cfillion/reaimgui](https://codeberg.org/cfillion
 GitHub repository was archived in June 2026 and is now a stale mirror — do not install from it.
 :::
 
-## Install the scripts
+## Install with ReaPack
 
-The repository's `Reaper/` folder mirrors REAPER's own resource path, so installing is one copy.
+The easy way, and the one that keeps itself up to date. Import the repository once:
+
+```
+https://github.com/michal-bartak/ReaPack/raw/main/index.xml
+```
+
+In REAPER: *Extensions → ReaPack → Import repositories*, paste that URL, then open
+*Extensions → ReaPack → Browse packages*, find **Name Colorizer** and install it.
+
+Every action in the table below is added to the Action List for you, the
+[toolbar icon](#the-toolbar-icon) arrives with it, and updates come through ReaPack from
+then on.
+
+## Install by hand
+
+If you would rather not use ReaPack, the repository's `Reaper/` folder mirrors REAPER's own
+resource path, so installing is one copy.
 
 1. Open *Options → Show REAPER resource path in explorer/finder*. That is the folder everything
    below goes into:
@@ -45,11 +61,6 @@ The repository's `Reaper/` folder mirrors REAPER's own resource path, so install
 
 1. In REAPER, open *Actions → Show action list → New action → Load ReaScript*, and load the
    scripts you want from the table below. They are in `Scripts/MXM_NameColorizer/`.
-
-:::note[One file is not an action]
-`MXM_NameColorizer.lua`, with no suffix, is the ReaPack manifest — package metadata and nothing
-else. It installs nothing and does nothing if you run it. Every action has a suffix.
-:::
 
 <figure class="shot">
 

@@ -55,7 +55,7 @@ Nothing is written to the project until you **Apply** or the background loop run
 
 ## Where to go next
 
-- [Installation](/ReaColorizer/installation/) — copy the folder in and add the actions.
+- [Installation](/ReaColorizer/installation/) — install through ReaPack, or copy the folder in by hand.
 - [The configuration window](/ReaColorizer/usage/) — the tabs, the rule row, the action bar.
 - [Matching names](/ReaColorizer/usage/matching/) — modes, supported regex, filters.
 - [Auto-apply](/ReaColorizer/usage/auto-apply/) — the background loop and what it refuses to touch.
