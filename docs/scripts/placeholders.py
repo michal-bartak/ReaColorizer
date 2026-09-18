@@ -33,13 +33,13 @@ ASSETS = Path(__file__).resolve().parent.parent / "src" / "assets"
 
 # A marker written into the PNG's text chunks, so --force and --status can tell our own
 # cards apart from a real screenshot that happens to sit at the same path.
-MARKER_KEY = "ReaColorizerDocs"
+MARKER_KEY = "AutoColorDocs"
 MARKER_VAL = "placeholder"
 
 # path (under src/assets), size, and what the real screenshot needs to show
 SHOTS = [
     ("installation/action-list.png", (1100, 620),
-     "REAPER's Action List with the MXM_NameColorizer_* scripts loaded"),
+     "REAPER's Action List with the MXM_AutoColor_* scripts loaded"),
     ("installation/toolbar-button.png", (760, 240),
      "The toolbar button for AutoToggle, lit while the loop runs"),
 
@@ -83,7 +83,7 @@ SHOTS = [
     ("troubleshooting/sws-warning.png", (1100, 240),
      "The banner shown when SWS Auto Color is enabled at the same time"),
     ("troubleshooting/why-this-colour.png", (1000, 640),
-     "MXM_NameColorizer_WhyThisColour.lua output in the ReaScript console"),
+     "MXM_AutoColor_WhyThisColour.lua output in the ReaScript console"),
 ]
 
 BG = (232, 232, 234)

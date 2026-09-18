@@ -1,5 +1,5 @@
 {
-  "name": "reacolorizer-docs",
+  "name": "autocolor-docs",
   "type": "module",
   "scripts": {
     "icon": "node scripts/icon.mjs",

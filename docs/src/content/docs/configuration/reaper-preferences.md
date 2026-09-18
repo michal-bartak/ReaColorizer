@@ -48,4 +48,4 @@ is the one winning.
 :::
 
 Note that this tool **resets** take colours whenever it writes a colour to an item — see
-[Takes are not coloured](/ReaColorizer/usage/items-and-folders/#takes-are-not-coloured).
+[Takes are not coloured](/AutoColor/usage/items-and-folders/#takes-are-not-coloured).

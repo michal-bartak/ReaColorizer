@@ -33,7 +33,7 @@ items on its child tracks.
 :::tip[There is a better answer for "items should look like their track"]
 An item with **no custom colour** is drawn by REAPER in its track's colour, live. So instead of
 writing the track's colour onto the item, you can strip the item's colour and let REAPER do it — see
-[reset unmatched items](/ReaColorizer/usage/clearing/#reset-unmatched-objects). Copy such an item to
+[reset unmatched items](/AutoColor/usage/clearing/#reset-unmatched-objects). Copy such an item to
 another track and it follows that track immediately, with no rule and nothing that can go stale.
 :::
 
@@ -76,7 +76,7 @@ a track it no longer belongs to.
 
 :::caution
 If you deliberately colour takes, do not use this tool on items — it will clear those colours. Which
-of the two your build draws is a [REAPER preference](/ReaColorizer/configuration/reaper-preferences/).
+of the two your build draws is a [REAPER preference](/AutoColor/configuration/reaper-preferences/).
 :::
 
 There are no rules for takes at all. Take names are auto-derived from the track
@@ -98,5 +98,5 @@ turned it into a rule matching every object.
 
 ## Where to go next
 
-- [Applying colours](/ReaColorizer/usage/applying/) — getting these decisions into the project.
-- [Clearing colours](/ReaColorizer/usage/clearing/) — including the reset that makes items follow their track.
+- [Applying colours](/AutoColor/usage/applying/) — getting these decisions into the project.
+- [Clearing colours](/AutoColor/usage/clearing/) — including the reset that makes items follow their track.

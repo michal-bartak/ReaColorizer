@@ -1,5 +1,5 @@
 --[[
-  MXM_NameColorizer_Dump.lua -- read-only diagnostic.
+  MXM_AutoColor_Dump.lua -- read-only diagnostic.
 
   Prints every track, item, region and marker with its name, GUID and current
   colour. Writes nothing. Run this first on a new project to confirm the target
@@ -48,7 +48,7 @@ local function section(title, list)
 end
 
 reaper.ClearConsole()
-w('=== NameColorizer target dump ===')
+w('=== AutoColor target dump ===')
 w('REAPER %s   marker colours clearable: %s',
   reaper.GetAppVersion(), tostring(targets.can_clear_markers()))
 

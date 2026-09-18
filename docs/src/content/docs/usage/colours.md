@@ -86,10 +86,10 @@ track rules only — nothing else has folder structure.
 The rule warns about both, because each leaves every group with one member and so one colour:
 
 - grouping by **folder** with an *is a folder track* filter;
-- grouping by **folder** while folder colours are set to [force](/ReaColorizer/usage/items-and-folders/#folder-colours).
+- grouping by **folder** while folder colours are set to [force](/AutoColor/usage/items-and-folders/#folder-colours).
 :::
 
 ## Where to go next
 
-- [Items and folders](/ReaColorizer/usage/items-and-folders/) — cascading a colour to items and down a folder.
-- [REAPER preferences](/ReaColorizer/configuration/reaper-preferences/) — two settings that decide whether these colours are visible at all.
+- [Items and folders](/AutoColor/usage/items-and-folders/) — cascading a colour to items and down a folder.
+- [REAPER preferences](/AutoColor/configuration/reaper-preferences/) — two settings that decide whether these colours are visible at all.

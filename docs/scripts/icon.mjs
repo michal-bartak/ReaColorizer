@@ -50,7 +50,7 @@ const TOOLBAR_MARGIN = 3.5 / 30;
 // the exact folder REAPER looks in and nobody copies it separately. The mxm_ prefix keeps it from
 // colliding with the 529 icons REAPER ships in that same folder.
 const TOOLBAR_DIR = join(REPO, 'Reaper', 'Data', 'toolbar_icons');
-const TOOLBAR_NAME = 'mxm_toolbar_reacolorizer.png';
+const TOOLBAR_NAME = 'mxm_toolbar_autocolor.png';
 
 /**
  * Advance every arm's colour `steps` places around the ring, so arm N takes the colour of the arm
@@ -92,7 +92,7 @@ for (const size of [16, 32, 48]) {
 
 // 2. The README mark. A PNG, not the SVG: GitHub's markdown sanitiser is fussier about SVG.
 await write(
-  join(REPO, 'icon', 'reacolorizer-128.png'),
+  join(REPO, 'icon', 'autocolor-128.png'),
   await sharp(Buffer.from(master)).resize(128, 128).png().toBuffer(),
 );
 

@@ -3,7 +3,7 @@ title: The configuration window
 description: Tabs, the rule row, the action bar, and the preview panes
 ---
 
-`MXM_NameColorizer_GUI.lua` opens the one window the tool has. Everything is on it: the rules, what
+`MXM_AutoColor_GUI.lua` opens the one window the tool has. Everything is on it: the rules, what
 they currently hit, and the buttons that put the colours into the project.
 
 <figure class="shot">
@@ -13,7 +13,7 @@ they currently hit, and the buttons that put the colours into the project.
 <figcaption>The configuration window</figcaption>
 </figure>
 
-Edits are saved to the [rules file](/ReaColorizer/configuration/rules-file/) as you make them —
+Edits are saved to the [rules file](/AutoColor/configuration/rules-file/) as you make them —
 there is no Save button. **Undo** (or `Cmd`/`Ctrl`+`Z` while the window has focus) steps back
 through changes to the **rules**; colour changes in the project use REAPER's own undo.
 
@@ -47,12 +47,12 @@ nowhere else.
 | handle | Drag to reorder. Click to highlight the rule — which is also where Objects preview points when you click a rule name in it. |
 | on/off | Switch the rule off without deleting it. A tab whose rules are all off says so. |
 | **Name** | Your label for the rule. Only ever shown in this window. |
-| **Match** | `contains`, `glob` or `regex` — see [Matching names](/ReaColorizer/usage/matching/). |
+| **Match** | `contains`, `glob` or `regex` — see [Matching names](/AutoColor/usage/matching/). |
 | **Pattern** | What to match. Leave it empty to match on the filter alone. |
 | **Aa** | Ignore case (ASCII only). |
-| **Filter** | An extra condition on top of the pattern — see [Filters](/ReaColorizer/usage/matching/#filters). |
-| **Colour** | The rule's colour, and optionally a [second one](/ReaColorizer/usage/colours/#gradients) for a gradient. |
-| **Items** | Tracks tab only: [also colour the items](/ReaColorizer/usage/items-and-folders/) on the tracks this rule matches. |
+| **Filter** | An extra condition on top of the pattern — see [Filters](/AutoColor/usage/matching/#filters). |
+| **Colour** | The rule's colour, and optionally a [second one](/AutoColor/usage/colours/#gradients) for a gradient. |
+| **Items** | Tracks tab only: [also colour the items](/AutoColor/usage/items-and-folders/) on the tracks this rule matches. |
 | **Hits** | How many objects this rule currently wins in this project. |
 | menu | Duplicate, Delete, and Move to top / up / down / bottom. |
 
@@ -104,11 +104,11 @@ Nothing you type here is saved, and nothing it does reaches the project.
 |---|---|
 | **+ *kind* rule** | Adds a rule to the open tab. |
 | **Undo** | Steps back through changes to the rules. |
-| **Apply now** | Colours the whole project, in one undo point. See [Applying colours](/ReaColorizer/usage/applying/). |
+| **Apply now** | Colours the whole project, in one undo point. See [Applying colours](/AutoColor/usage/applying/). |
 | **Selection** | Colours only what is selected. |
-| **Clear…** | Three clearing scopes — see [Clearing colours](/ReaColorizer/usage/clearing/). |
-| **Auto: off / on / paused** | The state of the background loop, and a Pause button once it runs. See [Auto-apply](/ReaColorizer/usage/auto-apply/). |
-| **Options** | Folders, scope, the background loop's timing, text size, rules file. See [Options](/ReaColorizer/configuration/). |
+| **Clear…** | Three clearing scopes — see [Clearing colours](/AutoColor/usage/clearing/). |
+| **Auto: off / on / paused** | The state of the background loop, and a Pause button once it runs. See [Auto-apply](/AutoColor/usage/auto-apply/). |
+| **Options** | Folders, scope, the background loop's timing, text size, rules file. See [Options](/AutoColor/configuration/). |
 
 The foot of the window keeps one line for status messages — what an Apply coloured, why a clear did
 nothing, whether a save failed. It is always there, whether or not it has anything to say, so the
@@ -119,12 +119,12 @@ layout never jumps.
 Two conditions are reported at the top of the window rather than in passing:
 
 - **SWS Auto Color is enabled** — both are live colour engines and they will fight. Switch one off;
-  see [Troubleshooting](/ReaColorizer/troubleshooting/#colours-keep-changing-back).
+  see [Troubleshooting](/AutoColor/troubleshooting/#colours-keep-changing-back).
 - **This rule file was written by a newer version** — editing is allowed, but nothing will be saved,
   so an older build cannot quietly destroy a config it does not understand.
 
 ## Where to go next
 
-- [Matching names](/ReaColorizer/usage/matching/) — the three modes, the supported regex, the filters.
-- [Colours and gradients](/ReaColorizer/usage/colours/) — one colour, two colours, and what a ramp spreads across.
-- [Applying colours](/ReaColorizer/usage/applying/) — Apply now, Selection, and the actions that do the same without the window.
+- [Matching names](/AutoColor/usage/matching/) — the three modes, the supported regex, the filters.
+- [Colours and gradients](/AutoColor/usage/colours/) — one colour, two colours, and what a ramp spreads across.
+- [Applying colours](/AutoColor/usage/applying/) — Apply now, Selection, and the actions that do the same without the window.

@@ -101,5 +101,5 @@ at the top, a catch-all at the bottom.
 
 ## Where to go next
 
-- [Colours and gradients](/ReaColorizer/usage/colours/) — what a matching rule then paints.
-- [Items and folders](/ReaColorizer/usage/items-and-folders/) — the two ways an object gets a colour without matching a rule of its own.
+- [Colours and gradients](/AutoColor/usage/colours/) — what a matching rule then paints.
+- [Items and folders](/AutoColor/usage/items-and-folders/) — the two ways an object gets a colour without matching a rule of its own.

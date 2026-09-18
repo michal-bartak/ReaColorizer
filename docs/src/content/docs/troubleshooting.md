@@ -5,7 +5,7 @@ description: When the colour is not what the rules say it should be
 
 ## Start here: why this colour?
 
-Select the track or item and run `MXM_NameColorizer_WhyThisColour.lua`. It answers the whole question
+Select the track or item and run `MXM_AutoColor_WhyThisColour.lua`. It answers the whole question
 in one console readout: which rule claimed the object, what the rules would set, whether anything is
 currently applying, and why an old colour survived.
 
@@ -13,7 +13,7 @@ currently applying, and why an old colour survived.
 
 ![WhyThisColour output](../../assets/troubleshooting/why-this-colour.png)
 
-<figcaption>MXM_NameColorizer_WhyThisColour.lua</figcaption>
+<figcaption>MXM_AutoColor_WhyThisColour.lua</figcaption>
 </figure>
 
 ## Nothing visibly changed, but it says it coloured things
@@ -21,7 +21,7 @@ currently applying, and why an old colour survived.
 Almost always a REAPER display setting rather than the tool:
 
 1. **Item colours are not drawn.** *Preferences → Appearance → Peaks/Waveforms* — tick **Item color**
-   for background and/or peaks. See [REAPER preferences](/ReaColorizer/configuration/reaper-preferences/).
+   for background and/or peaks. See [REAPER preferences](/AutoColor/configuration/reaper-preferences/).
 1. **A take colour is winning.** Take beats item. Confirm it by giving one item a custom colour and
    its take a different one — whichever you see is the one your build draws.
 1. **Your theme overrides it.** REAPER's own tooltip warns that a colour theme may override the tint
@@ -64,12 +64,12 @@ same intent usually has a linear form.
 The background loop **never reverts a colour you set by hand**: once an object's colour stops matching
 what the tool last wrote, that object is left alone until you rename it.
 
-To hand the object back to the rules, press **Apply now** (or run `MXM_NameColorizer_ApplyAll.lua`).
+To hand the object back to the rules, press **Apply now** (or run `MXM_AutoColor_ApplyAll.lua`).
 That drops the marks the loop is holding, and the rules take every object back.
 
 ## The Auto button says "off" and will not start
 
-Run the action `MXM_NameColorizer_AutoToggle.lua` once from the Action List. Until REAPER has run it,
+Run the action `MXM_AutoColor_AutoToggle.lua` once from the Action List. Until REAPER has run it,
 the script does not know its own command ID, so the button can only report the state — after that it
 starts and stops the loop.
 
@@ -78,12 +78,12 @@ starts and stops the loop.
 Items and regions are re-read on a timer — **Rescan items at most every (s)**, 5 s by default —
 because REAPER reports only one project-wide "something changed" counter and re-reading every item on
 every change is expensive. Renaming in place is the one edit nothing cheaper can see. Lower the
-interval, or press **Apply now**. See [Auto-apply](/ReaColorizer/usage/auto-apply/#what-it-re-reads-and-when).
+interval, or press **Apply now**. See [Auto-apply](/AutoColor/usage/auto-apply/#what-it-re-reads-and-when).
 
 ## My change to the scripts did nothing
 
 The window and the auto-toggle hold their Lua state for as long as they run. After editing anything
-under `Scripts/MXM_NameColorizer/lib/`:
+under `Scripts/MXM_AutoColor/lib/`:
 
 1. Close the configuration window and re-run it.
 1. Toggle auto **off and on** again.
@@ -103,7 +103,7 @@ not through REAPER's own track-colour action — so it is not scanned at all.
 
 ## My rules are gone
 
-Look next to [`config.json`](/ReaColorizer/configuration/rules-file/):
+Look next to [`config.json`](/AutoColor/configuration/rules-file/):
 
 | File | Meaning |
 |---|---|
@@ -122,11 +122,11 @@ understand. Update the scripts.
 
 | Script | What it tells you |
 |---|---|
-| `MXM_NameColorizer_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
-| `MXM_NameColorizer_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
-| `MXM_NameColorizer_RunTests.lua` | The self-test, printed to the ReaScript console |
+| `MXM_AutoColor_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
+| `MXM_AutoColor_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
+| `MXM_AutoColor_RunTests.lua` | The self-test, printed to the ReaScript console |
 
-For the background loop, set the ExtState `MXM_NameColorizer` / `auto_debug` to `1` and watch the
+For the background loop, set the ExtState `MXM_AutoColor` / `auto_debug` to `1` and watch the
 console.
 
 :::note[Probes that do not ship]

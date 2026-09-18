@@ -12,7 +12,7 @@ local M = {}
 
 ------------------------------------------------------------------ messaging
 function M.msg(text, title)
-  reaper.ShowMessageBox(text, title or 'Name Colorizer', 0)
+  reaper.ShowMessageBox(text, title or 'AutoColor', 0)
 end
 
 function M.console(text)
@@ -43,10 +43,10 @@ function M.warn_sws_once()
   local clash, keys = M.sws_conflict()
   if not clash then return false end
   M.msg('SWS Auto Color is currently enabled (' .. table.concat(keys, ', ') .. ').\n\n' ..
-        'Both it and Name Colorizer set colours automatically, so they will ' ..
+        'Both it and AutoColor set colours automatically, so they will ' ..
         'fight over the same tracks and markers.\n\n' ..
         'Turn one of them off: SWS > Auto Color/Icon/Layout.',
-        'Name Colorizer: conflict')
+        'AutoColor: conflict')
   return true
 end
 
@@ -59,13 +59,13 @@ function M.load_config()
     M.msg('Your rule file could not be read:\n\n  ' .. tostring(info.err) ..
           '\n\nIt has been kept as:\n  ' .. config.badpath() ..
           '\n\nStarting from defaults so nothing is lost.',
-          'Name Colorizer: unreadable config')
+          'AutoColor: unreadable config')
   elseif info.created then
-    M.console('Name Colorizer: created a starter rule set at ' .. config.path())
+    M.console('AutoColor: created a starter rule set at ' .. config.path())
   elseif info.readonly then
-    M.msg('This rule file was written by a newer version of Name Colorizer.\n\n' ..
+    M.msg('This rule file was written by a newer version of AutoColor.\n\n' ..
           'It will be used as-is, but not saved over, so no settings are lost.',
-          'Name Colorizer: newer config')
+          'AutoColor: newer config')
   end
 
   return cfg, info
@@ -83,32 +83,32 @@ function M.summary(what, stats, opts)
     end
     M.msg(what .. ':\n\n' .. stats.written .. ' object(s) coloured, ' ..
           #stats.failures .. ' failed.\n\n' .. table.concat(uniq, '\n'),
-          'Name Colorizer: some writes failed')
+          'AutoColor: some writes failed')
     return
   end
 
   if stats.scanned == 0 then
     M.msg(what .. ':\n\nThere was nothing to colour ' ..
           (opts.selection and '-- nothing is selected.' or 'in this project.'),
-          'Name Colorizer')
+          'AutoColor')
     return
   end
 
   if stats.matched == 0 then
     M.msg(what .. ':\n\nNone of your rules matched any of the ' .. stats.scanned ..
-          ' object(s) scanned.\n\nOpen the Name Colorizer window to see which ' ..
-          'rules match what.', 'Name Colorizer: no matches')
+          ' object(s) scanned.\n\nOpen the AutoColor window to see which ' ..
+          'rules match what.', 'AutoColor: no matches')
     return
   end
 
   if stats.written == 0 then
     -- Everything already had the right colour. Say so rather than looking broken.
-    M.console(string.format('Name Colorizer: %s -- already up to date (%d matched, %d scanned)',
+    M.console(string.format('AutoColor: %s -- already up to date (%d matched, %d scanned)',
                             what, stats.matched, stats.scanned))
     return
   end
 
-  M.console(string.format('Name Colorizer: %s -- %d coloured%s (%d matched of %d scanned)',
+  M.console(string.format('AutoColor: %s -- %d coloured%s (%d matched of %d scanned)',
                           what, stats.written,
                           stats.cleared > 0 and (', ' .. stats.cleared .. ' cleared') or '',
                           stats.matched, stats.scanned))

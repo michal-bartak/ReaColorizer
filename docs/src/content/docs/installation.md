@@ -30,7 +30,7 @@ https://github.com/michal-bartak/ReaPack/raw/main/index.xml
 ```
 
 In REAPER: *Extensions → ReaPack → Import repositories*, paste that URL, then open
-*Extensions → ReaPack → Browse packages*, find **Name Colorizer** and install it.
+*Extensions → ReaPack → Browse packages*, find **AutoColor** and install it.
 
 Every action in the table below is added to the Action List for you, the
 [toolbar icon](#the-toolbar-icon) arrives with it, and updates come through ReaPack from
@@ -53,14 +53,14 @@ resource path, so installing is one copy.
 1. Copy the **contents** of `Reaper/` over it, merging with what is already there:
 
    ```
-   Reaper/Scripts/MXM_NameColorizer/  ->  <resource path>/Scripts/MXM_NameColorizer/
+   Reaper/Scripts/MXM_AutoColor/  ->  <resource path>/Scripts/MXM_AutoColor/
    Reaper/Data/toolbar_icons/         ->  <resource path>/Data/toolbar_icons/
    ```
 
    The scripts and the [toolbar icon](#the-toolbar-icon) land in the right places together.
 
 1. In REAPER, open *Actions → Show action list → New action → Load ReaScript*, and load the
-   scripts you want from the table below. They are in `Scripts/MXM_NameColorizer/`.
+   scripts you want from the table below. They are in `Scripts/MXM_AutoColor/`.
 
 <figure class="shot">
 
@@ -73,14 +73,14 @@ resource path, so installing is one copy.
 
 | Script | What it does |
 |---|---|
-| `MXM_NameColorizer_GUI.lua` | The configuration window |
-| `MXM_NameColorizer_ApplyAll.lua` | Colour the whole project, one undo point |
-| `MXM_NameColorizer_ApplySelection.lua` | Colour the selected tracks and items |
-| `MXM_NameColorizer_ClearColors.lua` | Reset colours to the theme default |
-| `MXM_NameColorizer_AutoToggle.lua` | Start/stop background auto-colouring |
-| `MXM_NameColorizer_WhyThisColour.lua` | Explain the colour on the selected track or item |
-| `MXM_NameColorizer_Dump.lua` | Read-only diagnostic listing |
-| `MXM_NameColorizer_RunTests.lua` | Self-test, prints to the ReaScript console |
+| `MXM_AutoColor_GUI.lua` | The configuration window |
+| `MXM_AutoColor_ApplyAll.lua` | Colour the whole project, one undo point |
+| `MXM_AutoColor_ApplySelection.lua` | Colour the selected tracks and items |
+| `MXM_AutoColor_ClearColors.lua` | Reset colours to the theme default |
+| `MXM_AutoColor_AutoToggle.lua` | Start/stop background auto-colouring |
+| `MXM_AutoColor_WhyThisColour.lua` | Explain the colour on the selected track or item |
+| `MXM_AutoColor_Dump.lua` | Read-only diagnostic listing |
+| `MXM_AutoColor_RunTests.lua` | Self-test, prints to the ReaScript console |
 
 You do not need all of them. `GUI` and `AutoToggle` are enough for most setups; the rest are there
 for keyboard shortcuts and for diagnosing a colour that looks wrong.
@@ -96,9 +96,9 @@ An icon for the configuration-window button comes with the scripts — copying `
 resource path already put it in place:
 
 ```
-<resource path>/Data/toolbar_icons/mxm_toolbar_reacolorizer.png        90x30
-<resource path>/Data/toolbar_icons/150/mxm_toolbar_reacolorizer.png    135x45
-<resource path>/Data/toolbar_icons/200/mxm_toolbar_reacolorizer.png    180x60
+<resource path>/Data/toolbar_icons/mxm_toolbar_autocolor.png        90x30
+<resource path>/Data/toolbar_icons/150/mxm_toolbar_autocolor.png    135x45
+<resource path>/Data/toolbar_icons/200/mxm_toolbar_autocolor.png    180x60
 ```
 
 It is in REAPER's own toolbar format: a three-state strip of square cells — normal, hover, pressed.
@@ -106,7 +106,7 @@ The `150` and `200` copies are what REAPER reaches for on a hi-DPI display, and 
 **same filename** in those subfolders, so do not rename them.
 
 To use it: restart REAPER, right-click the toolbar → *Customize toolbar…*, select the
-`MXM_NameColorizer_GUI.lua` button, and pick the icon from REAPER's icon browser.
+`MXM_AutoColor_GUI.lua` button, and pick the icon from REAPER's icon browser.
 
 :::note[What the states look like]
 Hovering rotates the star's colours one step around the ring; pressing rotates them two. REAPER's
@@ -127,20 +127,20 @@ applies to every button on the toolbar.
 
 ## First run
 
-Run `MXM_NameColorizer_GUI.lua`. On the very first run it writes a **starter rule set** so the window
+Run `MXM_AutoColor_GUI.lua`. On the very first run it writes a **starter rule set** so the window
 has something to show, and tells you where:
 
 ```
-<REAPER resource path>/NameColorizer/config.json
+<REAPER resource path>/AutoColor/config.json
 ```
 
 That file is one global rule set shared by every project, and it sits **outside** `Scripts/` on
 purpose — reinstalling or updating the scripts cannot destroy your rules. See
-[Rules file](/ReaColorizer/configuration/rules-file/).
+[Rules file](/AutoColor/configuration/rules-file/).
 
 :::caution[Editing the scripts]
 The window and the auto-toggle hold their Lua state for as long as they run. If you edit anything
-under `Scripts/MXM_NameColorizer/lib/`, close the window and re-run it, and toggle auto off and on
+under `Scripts/MXM_AutoColor/lib/`, close the window and re-run it, and toggle auto off and on
 again — otherwise the old code is still the code that is running. One-shot actions pick up changes
 immediately.
 :::
@@ -154,5 +154,5 @@ is lost, and the previous file is kept as `config.bak.json`.
 
 After migrating you may find duplicate rules on the **Items** tab — copies of track rules that
 happened to match item *names*. If what you actually wanted was "colour the items on these tracks",
-delete the copies and tick [also colour items](/ReaColorizer/usage/items-and-folders/) on the track
+delete the copies and tick [also colour items](/AutoColor/usage/items-and-folders/) on the track
 rule instead.

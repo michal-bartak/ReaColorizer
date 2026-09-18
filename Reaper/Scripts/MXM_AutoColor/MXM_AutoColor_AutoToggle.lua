@@ -1,11 +1,11 @@
 --[[
-  MXM_NameColorizer_AutoToggle.lua -- start/stop background auto-colouring.
+  MXM_AutoColor_AutoToggle.lua -- start/stop background auto-colouring.
 
   Run once to start (the toolbar button lights up), run again to stop. Only one
   instance can be live: the second launch clears the shared instance token,
   which the running one notices on its next tick and exits.
 
-  Set the ExtState MXM_NameColorizer / auto_debug to "1" for a periodic console
+  Set the ExtState MXM_AutoColor / auto_debug to "1" for a periodic console
   readout of ticks, sweeps, writes and per-tick cost.
 ]]
 
@@ -71,7 +71,7 @@ local function loop()
       errors = errors + 1
       -- Do not spam a broken loop at 5 Hz: say it once and stop cleanly.
       entry.msg('Background auto-colouring hit an error and has stopped:\n\n' ..
-                tostring(err), 'Name Colorizer')
+                tostring(err), 'AutoColor')
       return
     end
   end
@@ -83,7 +83,7 @@ local function loop()
     last_debug = now
     local s = autoloop.state.stats
     reaper.ShowConsoleMsg(string.format(
-      'NameColorizer auto: %d ticks, %d sweeps, %d writes, %d left alone, last tick %.2f ms\n',
+      'AutoColor auto: %d ticks, %d sweeps, %d writes, %d left alone, last tick %.2f ms\n',
       s.ticks, s.sweeps, s.writes, s.skipped, s.last_ms))
   end
 

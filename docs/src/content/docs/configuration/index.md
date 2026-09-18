@@ -16,7 +16,7 @@ settings are global — one rule set, one set of options, shared by every projec
 ## Folders
 
 How a folder's colour reaches its children. See
-[Folder colours](/ReaColorizer/usage/items-and-folders/#folder-colours).
+[Folder colours](/AutoColor/usage/items-and-folders/#folder-colours).
 
 | Setting | Meaning |
 |---|---|
@@ -28,7 +28,7 @@ How a folder's colour reaches its children. See
 
 **Reset to the default colour when no rule matches**, one checkbox per kind — Tracks, Items, Regions,
 Markers. Off everywhere by default. See
-[Reset unmatched objects](/ReaColorizer/usage/clearing/#reset-unmatched-objects).
+[Reset unmatched objects](/AutoColor/usage/clearing/#reset-unmatched-objects).
 
 :::tip
 Recommended for **items**, where it makes an item follow its track live. Careful on **tracks**,
@@ -44,7 +44,7 @@ where it also strips colours you set by hand.
 | **Work budget (ms)** | 4 | How long it may work before yielding back to REAPER. |
 | **Rescan items at most every (s)** | 5 | The delay before an item *renamed in place* is noticed. `0` re-reads everything on every change. |
 
-[Auto-apply](/ReaColorizer/usage/auto-apply/) explains what the loop re-reads and why the rescan
+[Auto-apply](/AutoColor/usage/auto-apply/) explains what the loop re-reads and why the rescan
 interval exists.
 
 ## Window
@@ -54,11 +54,11 @@ scales the whole layout rather than just the labels.
 
 ## Rules file
 
-Shows the path to [`config.json`](/ReaColorizer/configuration/rules-file/), and offers **Replace with
+Shows the path to [`config.json`](/AutoColor/configuration/rules-file/), and offers **Replace with
 the starter rules…** — the built-in starter set, as written on first run. It asks for confirmation,
 and the **Undo** button takes it back while the window is open.
 
 ## Where to go next
 
-- [Rules file](/ReaColorizer/configuration/rules-file/) — what is stored, where, and what happens when it goes wrong.
-- [REAPER preferences](/ReaColorizer/configuration/reaper-preferences/) — two settings outside this tool that decide what you see.
+- [Rules file](/AutoColor/configuration/rules-file/) — what is stored, where, and what happens when it goes wrong.
+- [REAPER preferences](/AutoColor/configuration/reaper-preferences/) — two settings outside this tool that decide what you see.

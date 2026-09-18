@@ -6,17 +6,17 @@ description: Where the rule set lives, what is in it, and how it is protected
 One global rule set is shared by every project:
 
 ```
-<REAPER resource path>/NameColorizer/config.json
+<REAPER resource path>/AutoColor/config.json
 ```
 
 | OS | Path |
 |----|------|
-| macOS | `~/Library/Application Support/REAPER/NameColorizer/config.json` |
-| Windows | `%AppData%\REAPER\NameColorizer\config.json` |
-| Linux | `~/.config/REAPER/NameColorizer/config.json` |
+| macOS | `~/Library/Application Support/REAPER/AutoColor/config.json` |
+| Windows | `%AppData%\REAPER\AutoColor\config.json` |
+| Linux | `~/.config/REAPER/AutoColor/config.json` |
 
 *Options → Show REAPER resource path in explorer/finder* opens the parent directory. The path is
-also printed in the **Rules file** section of [Options](/ReaColorizer/configuration/).
+also printed in the **Rules file** section of [Options](/AutoColor/configuration/).
 
 :::note[Why it is not in `Scripts/`]
 It sits deliberately **outside** the script folder, so reinstalling or updating the scripts cannot
@@ -88,7 +88,7 @@ the whole configuration — copying it to another machine is the entire "sync" s
 
 - An **older** file is migrated on load, with the previous file kept as `config.bak.json`. The
   single-list layout becomes one list per kind, preserving relative order within each kind — see
-  [Upgrading](/ReaColorizer/installation/#upgrading-from-the-single-list-version).
+  [Upgrading](/AutoColor/installation/#upgrading-from-the-single-list-version).
 - A **newer** file is loaded read-only. The window shows a banner, editing is allowed, and nothing
   is saved — so an older build cannot quietly rewrite a config it does not understand.
 

@@ -1,5 +1,5 @@
 --[[
-  MXM_NameColorizer_FocusProbe.lua -- what did you touch last?
+  MXM_AutoColor_FocusProbe.lua -- what did you touch last?
 
   Read-only. Changes nothing; it only reports.
 
@@ -13,7 +13,7 @@
     1. click a track panel      -> run
     2. click an item            -> run
     3. click inside the
-       Name Colorizer window    -> run      <- the one that matters: does our
+       AutoColor window    -> run      <- the one that matters: does our
                                               own window clobber the context?
     4. click the arrange
        background               -> run
@@ -33,7 +33,7 @@ local function ctxname(v)
   return CONTEXT[v] or ('? (' .. tostring(v) .. ')')
 end
 
-local out = { '', '--- Name Colorizer focus probe -------------------------' }
+local out = { '', '--- AutoColor focus probe -------------------------' }
 local function say(fmt, ...) out[#out + 1] = string.format(fmt, ...) end
 
 -- Existence first. Assuming an API is there has bitten this project twice.

@@ -3,7 +3,7 @@ title: Auto-apply
 description: The background loop, what it refuses to touch, and what it costs
 ---
 
-`MXM_NameColorizer_AutoToggle.lua` starts a background loop that keeps the project in step as you
+`MXM_AutoColor_AutoToggle.lua` starts a background loop that keeps the project in step as you
 rename things. Run the action again to stop it. The toolbar button lights while it runs.
 
 <figure class="shot">
@@ -18,14 +18,14 @@ rename things. Run the action again to stop it. The toolbar button lights while 
 - **It never reverts a colour you set by hand.** If an object's colour stops matching what the tool
   last wrote, while its name is unchanged, that object is left alone until you rename it.
 - It adds **no undo points**, so renaming a track does not shred your undo history. Turn on
-  *Create undo points for automatic changes* in [Options](/ReaColorizer/configuration/) if you want
+  *Create undo points for automatic changes* in [Options](/AutoColor/configuration/) if you want
   them.
 - It writes nothing when nothing changed, and pauses entirely **while recording**.
 - Tracks are swept immediately; items and regions follow once the project has settled, in
   time-budgeted chunks.
 
 :::tip[Taking an object back]
-**Apply now** (from the window or `MXM_NameColorizer_ApplyAll.lua`) tells the loop to drop those
+**Apply now** (from the window or `MXM_AutoColor_ApplyAll.lua`) tells the loop to drop those
 hand-colour marks, so the rules own every object again.
 :::
 
@@ -53,7 +53,7 @@ The rescan interval is 5 s by default, and the only thing waiting on it is an it
 place**, which nothing cheaper can see. Set it to 0 to re-read everything on every change — correct,
 and slow on a large project.
 
-`Check every (s)` and `Work budget (ms)` in [Options](/ReaColorizer/configuration/) control how
+`Check every (s)` and `Work budget (ms)` in [Options](/AutoColor/configuration/) control how
 often the loop wakes and how long it may work before yielding.
 
 :::caution[Gradients on items]
@@ -64,10 +64,10 @@ large projects.
 
 ## Debug output
 
-Set the ExtState `MXM_NameColorizer` / `auto_debug` to `1` for a console readout of what the loop is
+Set the ExtState `MXM_AutoColor` / `auto_debug` to `1` for a console readout of what the loop is
 doing and why.
 
 ## Where to go next
 
-- [Options](/ReaColorizer/configuration/) — the timing settings and undo behaviour.
-- [Troubleshooting](/ReaColorizer/troubleshooting/) — when a colour is not what the rules say it should be.
+- [Options](/AutoColor/configuration/) — the timing settings and undo behaviour.
+- [Troubleshooting](/AutoColor/troubleshooting/) — when a colour is not what the rules say it should be.

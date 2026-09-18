@@ -1,5 +1,5 @@
 --[[
-  MXM_NameColorizer_MakeTestProject.lua -- build a scratch project that exercises
+  MXM_AutoColor_MakeTestProject.lua -- build a scratch project that exercises
   every awkward case, in a NEW PROJECT TAB so nothing you have open is touched.
 
   Covers: a folder with two children, a nested folder closing two levels at once,
@@ -10,9 +10,9 @@
 ]]
 
 if reaper.ShowMessageBox(
-     'Create a Name Colorizer test project?\n\n' ..
+     'Create a AutoColor test project?\n\n' ..
      'It opens in a NEW project tab; nothing you have open is modified.',
-     'Name Colorizer', 4) ~= 6 then
+     'AutoColor', 4) ~= 6 then
   return
 end
 
@@ -73,12 +73,12 @@ reaper.AddProjectMarker2(0, true,  8.0, 12.0, 'Verse 2', -1, 0)
 reaper.PreventUIRefresh(-1)
 reaper.TrackList_AdjustWindows(false)
 reaper.UpdateArrange()
-reaper.Undo_EndBlock('Name Colorizer test project', -1)
+reaper.Undo_EndBlock('AutoColor test project', -1)
 
 reaper.ShowMessageBox(
   'Test project created in a new tab.\n\n' ..
   'Now run:\n' ..
-  '  1. MXM_NameColorizer_Dump.lua      (read-only)\n' ..
-  '  2. MXM_NameColorizer_ApplyAll.lua  (then Cmd-Z to undo)\n' ..
-  '  3. MXM_NameColorizer_ApplyAll.lua  again -- it must say "already up to date"',
-  'Name Colorizer', 0)
+  '  1. MXM_AutoColor_Dump.lua      (read-only)\n' ..
+  '  2. MXM_AutoColor_ApplyAll.lua  (then Cmd-Z to undo)\n' ..
+  '  3. MXM_AutoColor_ApplyAll.lua  again -- it must say "already up to date"',
+  'AutoColor', 0)

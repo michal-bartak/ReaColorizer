@@ -7,8 +7,8 @@ description: Repository layout, running the tests, and building these docs
 
 ```
 Reaper/                     mirrors REAPER's resource path; this is what gets installed
-  Scripts/MXM_NameColorizer/
-    MXM_NameColorizer_*.lua actions you add to REAPER's Action List
+  Scripts/MXM_AutoColor/
+    MXM_AutoColor_*.lua actions you add to REAPER's Action List
     lib/                    the engine; lib/gui/ is the only part that uses ImGui
   Data/toolbar_icons/       the toolbar icon, at 1x, 150 and 200
 Color/                      the ReaPack manifest, and nothing else; the directory
@@ -34,7 +34,7 @@ checked against source rather than documentation. They exist so nobody has to re
 
 ## Tests
 
-`MXM_NameColorizer_RunTests.lua` runs from REAPER's Action List and prints a summary to the ReaScript
+`MXM_AutoColor_RunTests.lua` runs from REAPER's Action List and prints a summary to the ReaScript
 console. It touches no project state and never writes your config.
 
 The full suite runs **outside** REAPER, against a mocked API:
@@ -48,11 +48,11 @@ Expect `ALL GREEN`. The runner's exit status is meaningful, so it drops straight
 pre-commit hook. It covers the engine, the action scripts end to end, the background loop, the GUI
 logic and its drawing paths — against a mock REAPER and a stub ImGui — plus a differential fuzz of
 the regex engine against Python's `re`. See
-[`tests/README.md`](https://github.com/michal-bartak/ReaColorizer/blob/main/tests/README.md).
+[`tests/README.md`](https://github.com/michal-bartak/AutoColor/blob/main/tests/README.md).
 
 :::caution[Reloading changed code]
 The window and the auto-toggle hold their Lua state for as long as they run. After editing anything
-under `Reaper/Scripts/MXM_NameColorizer/lib/`, close the window and re-run it, and toggle auto off
+under `Reaper/Scripts/MXM_AutoColor/lib/`, close the window and re-run it, and toggle auto off
 and on. One-shot actions pick up changes immediately.
 :::
 
@@ -61,7 +61,7 @@ and on. One-shot actions pick up changes immediately.
 The site is [Astro](https://astro.build/) + [Starlight](https://starlight.astro.build/), in `docs/`:
 
 ```bash
-make docs          # build and serve at http://localhost:4321/ReaColorizer/
+make docs          # build and serve at http://localhost:4321/AutoColor/
 make docs-dev      # live-reload dev server, for writing
 make docs-build    # static build into docs/dist/
 ```
@@ -82,9 +82,9 @@ make icon
 
 | Output | Why there |
 |---|---|
-| `Reaper/Data/toolbar_icons/mxm_toolbar_reacolorizer.png` (+ `150/`, `200/`) | Part of the install payload, so it ships with the scripts |
+| `Reaper/Data/toolbar_icons/mxm_toolbar_autocolor.png` (+ `150/`, `200/`) | Part of the install payload, so it ships with the scripts |
 | `docs/public/favicon*.png`, `favicon.svg` | The site's tab icon |
-| `icon/reacolorizer-128.png` | The README mark |
+| `icon/autocolor-128.png` | The README mark |
 
 The master stays outside `Reaper/` because it is a source file, not something REAPER installs; the
 renders go inside it because they are. The toolbar strips are the interesting output — REAPER wants
@@ -122,4 +122,4 @@ width and height, so a PNG straight from REAPER is the right thing to commit.
 workflow skips itself while the repo is private and starts working the moment it is public.
 
 `site` and `base` in `astro.config.mjs` encode the published URL
-(`https://michal-bartak.github.io/ReaColorizer/`) — both need updating if the repository is renamed.
+(`https://michal-bartak.github.io/AutoColor/`) — both need updating if the repository is renamed.

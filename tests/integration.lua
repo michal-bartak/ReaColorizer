@@ -4,7 +4,7 @@ local mock = require 'mockreaper'
 
 local NC  = os.getenv('NC')
 local TMP = os.getenv('SP') .. '/proj'
-os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/NameColorizer"')
+os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/AutoColor"')
 
 local pass, fail, fails = 0, 0, {}
 local function check(ok, label, detail)
@@ -12,7 +12,7 @@ local function check(ok, label, detail)
   else fail = fail + 1; fails[#fails+1] = label .. (detail and ('  -- ' .. detail) or '') end
 end
 
-local P = mock.install{ resource = TMP, script = NC .. '/MXM_NameColorizer_ApplyAll.lua' }
+local P = mock.install{ resource = TMP, script = NC .. '/MXM_AutoColor_ApplyAll.lua' }
 
 package.path = NC .. '/?.lua;' .. NC .. '/lib/?.lua;' .. package.path
 local config = require 'config'
@@ -53,7 +53,7 @@ r('region',{ label = 'Chorus', mode = 'regex', pattern = '^Chorus', color = TEAL
 assert(config.save(cfg))
 
 ------------------------------------------------------------------ apply all
-dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
 
 local function tcolor(name)
   for _, t in ipairs(P.tracks) do
@@ -92,7 +92,7 @@ end
 ------------------------------------------------- idempotence (the key property)
 local before = #P.undo
 P.console = {}
-dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
 check(#P.undo == before, 'a second Apply writes nothing and adds NO undo point',
       (#P.undo - before) .. ' new undo blocks')
 check(P.consoletext():find('already up to date') ~= nil,
@@ -103,12 +103,12 @@ do
   local c2 = config.load()
   c2.options.propagate_folders = 'force'
   assert(config.save(c2))
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
   check(tcolor('Kick In') == GREEN, 'force policy overrides a matched child')
 
   c2 = config.load(); c2.options.propagate_folders = 'fill_unmatched'
   assert(config.save(c2))
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
   check(tcolor('Kick In') == RED, 'switching back restores the child rule')
 end
 
@@ -117,9 +117,9 @@ do
   for _, t in ipairs(P.tracks) do t.color = 0 end
   for _, it in ipairs(P.items) do it.color = 0 end
   _G.reaper.get_action_context = function()
-    return false, NC .. '/MXM_NameColorizer_ApplySelection.lua', 0, 1, 0, 0, 0, ''
+    return false, NC .. '/MXM_AutoColor_ApplySelection.lua', 0, 1, 0, 0, 0, ''
   end
-  dofile(NC .. '/MXM_NameColorizer_ApplySelection.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplySelection.lua')
   check(tcolor('Sub Bass') == PURPLE, 'selection apply coloured the selected track')
   check(tcolor('Kick In') == nil,     'selection apply left unselected tracks alone')
   check(icolor(2) == BLUE,            'selection apply coloured the selected item')
@@ -128,7 +128,7 @@ end
 
 --------------------------------------------------------------- clear colours
 do
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')     -- colour everything again
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')     -- colour everything again
   check(tcolor('Kick In') == RED, 'recoloured before the clear test')
 
   -- answer the Yes/No/Cancel box with NO = "everything the rules match"
@@ -139,9 +139,9 @@ do
     return 1
   end
   _G.reaper.get_action_context = function()
-    return false, NC .. '/MXM_NameColorizer_ClearColors.lua', 0, 1, 0, 0, 0, ''
+    return false, NC .. '/MXM_AutoColor_ClearColors.lua', 0, 1, 0, 0, 0, ''
   end
-  dofile(NC .. '/MXM_NameColorizer_ClearColors.lua')
+  dofile(NC .. '/MXM_AutoColor_ClearColors.lua')
 
   check(tcolor('Kick In') == nil,   'clear reset a matched track')
   check(tcolor('Drums') == nil,     'clear reset the folder bus')
@@ -151,13 +151,13 @@ end
 --------------------------------- older REAPER: markers cannot be cleared
 do
   local P3 = mock.install{ resource = TMP, no_modern_markers = true,
-                           script = NC .. '/MXM_NameColorizer_ApplyAll.lua' }
+                           script = NC .. '/MXM_AutoColor_ApplyAll.lua' }
   P3.now = 1000
   P3.track('Sub Bass'); P3.mark('Chorus 1', true, { rgnend = 8.0 })
   package.loaded['targets'] = nil                     -- re-probe APIExists
   local targets = require 'targets'
   check(targets.can_clear_markers() == false, 'older REAPER reports it cannot clear markers')
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
   local col
   for _, m in ipairs(P3.marks) do if m.name == 'Chorus 1' then col = m.color end end
   check(require('colors').from_native(col) == TEAL,
@@ -168,7 +168,7 @@ end
 -- The real-world case: a take carries a custom colour, so the item's own
 -- colour is invisible, and copy/paste drags that take colour to another track.
 do
-  local P4 = mock.install{ resource = TMP, script = NC .. '/MXM_NameColorizer_ApplyAll.lua' }
+  local P4 = mock.install{ resource = TMP, script = NC .. '/MXM_AutoColor_ApplyAll.lua' }
   P4.now = 1000
   package.loaded['targets'] = nil; package.loaded['apply'] = nil
   local targets = require 'targets'
@@ -194,7 +194,7 @@ do
                                        take_color = colors2.to_native(STRUM) })
   check(colors2.from_native(pasted.take.color) == STRUM, 'the take starts out coloured')
 
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
 
   check(colors2.from_native(pasted.color) == STRINGS,
         'the item gets its track colour', tostring(colors2.from_native(pasted.color)))
@@ -209,17 +209,17 @@ do
   local masked = P4.item('anything', { track = t_strings,
                                        color = colors2.to_native(STRINGS),
                                        take_color = colors2.to_native(STRUM) })
-  dofile(NC .. '/MXM_NameColorizer_ApplyAll.lua')
+  dofile(NC .. '/MXM_AutoColor_ApplyAll.lua')
   check(colors2.norm(masked.take.color) == 0,
         'an item with the right colour but a masking take is still fixed')
 
   -- and Clear releases both
   _G.reaper.ShowMessageBox = function(_, _, kind) return kind == 3 and 7 or 1 end
   _G.reaper.get_action_context = function()
-    return false, NC .. '/MXM_NameColorizer_ClearColors.lua', 0, 1, 0, 0, 0, ''
+    return false, NC .. '/MXM_AutoColor_ClearColors.lua', 0, 1, 0, 0, 0, ''
   end
   local stale = P4.item('x', { track = t_strings, take_color = colors2.to_native(STRUM) })
-  dofile(NC .. '/MXM_NameColorizer_ClearColors.lua')
+  dofile(NC .. '/MXM_AutoColor_ClearColors.lua')
   check(colors2.norm(stale.take.color) == 0,
         'Clear releases a take colour even when the item had none')
 end

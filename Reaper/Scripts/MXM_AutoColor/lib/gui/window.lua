@@ -186,7 +186,7 @@ local function options_popup(FS)
       'Replace your current rules with the built-in starter set?\n\n' ..
       'Your existing rules will be gone. This can be undone with the ' ..
       'Undo button while the window is open.',
-      'Name Colorizer', 4)
+      'AutoColor', 4)
     if ans == 6 then
       app.snapshot()
       app.st.cfg.rules = config.starter().rules
@@ -233,7 +233,7 @@ local function clear_popup()
       'Reset every custom colour in this project to the theme default?\n\n' ..
       'This includes colours this tool never set. Undo (Cmd+Z) will put ' ..
       'them back.',
-      'Name Colorizer', 4)
+      'AutoColor', 4)
     if ans == 6 then app.clear_colors('all') end
   end
 
@@ -258,7 +258,7 @@ local function auto_button(FS, w)
       ImGui.SetTooltip(ctx, app.auto_command_id()
         and 'Background auto-colouring is off.\nClick to start it.'
         or  'Background auto-colouring is off.\n\nRun the action\n' ..
-            'MXM_NameColorizer_AutoToggle.lua once; after that\n' ..
+            'MXM_AutoColor_AutoToggle.lua once; after that\n' ..
             'this button can start and stop it.')
     else
       ImGui.SetTooltip(ctx, 'Background auto-colouring is running.\n' ..

@@ -111,7 +111,7 @@ local floor = math.floor
 --- REAPER answers this for its own "...depending on focus" actions with the
 --- cursor context, so do the same rather than inventing a rule.
 ---
---- Measured, not assumed (MXM_NameColorizer_FocusProbe.lua): GetCursorContext()
+--- Measured, not assumed (MXM_AutoColor_FocusProbe.lua): GetCursorContext()
 --- is useless from a script -- it reported "unknown" (-1) on every single run,
 --- because the running action is not the arrange view. GetCursorContext2 with
 --- want_last_valid keeps the last real answer and tracked clicks correctly.

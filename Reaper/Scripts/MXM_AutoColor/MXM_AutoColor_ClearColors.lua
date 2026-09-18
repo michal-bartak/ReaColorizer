@@ -1,5 +1,5 @@
 --[[
-  MXM_NameColorizer_ClearColors.lua
+  MXM_AutoColor_ClearColors.lua
   Reset colours to default.
 
   Two scopes are offered here:
@@ -27,7 +27,7 @@ local choice = reaper.ShowMessageBox(
   'YES     = the selected tracks and items\n' ..
   'NO      = everything the current rules match\n' ..
   'CANCEL  = do nothing',
-  'Name Colorizer: clear colours', 3)          -- 3 = Yes / No / Cancel
+  'AutoColor: clear colours', 3)          -- 3 = Yes / No / Cancel
 
 if choice == 2 then return end                 -- cancel
 local selection = (choice == 6)

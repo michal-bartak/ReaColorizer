@@ -5,7 +5,7 @@
   Scripts/ so that updating or reinstalling the scripts can never clobber a
   user's rules:
 
-      <resource path>/NameColorizer/config.json
+      <resource path>/AutoColor/config.json
 
   Rules are global (one set for every project), which is what was asked for.
 
@@ -20,7 +20,7 @@ local rulesmod = require 'rules'
 local M = {}
 
 M.VERSION     = 2
-M.EXT_SECTION = 'MXM_NameColorizer'
+M.EXT_SECTION = 'MXM_AutoColor'
 
 local function in_reaper()
   return type(reaper) == 'table' and reaper.GetResourcePath ~= nil
@@ -29,7 +29,7 @@ end
 ---------------------------------------------------------------------- paths
 function M.dir()
   if in_reaper() then
-    return reaper.GetResourcePath() .. '/NameColorizer'
+    return reaper.GetResourcePath() .. '/AutoColor'
   end
   return os.getenv('NC_TEST_DIR') or '.'
 end

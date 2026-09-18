@@ -1,5 +1,5 @@
 --[[
-  MXM_NameColorizer_GUI.lua -- the configuration window.
+  MXM_AutoColor_GUI.lua -- the configuration window.
 
   Requires ReaImGui 0.10+. Everything else in this package works without it.
 ]]
@@ -12,11 +12,11 @@ package.path = ROOT .. '?.lua;' .. ROOT .. 'lib' .. sep .. '?.lua;' .. package.p
 ------------------------------------------------------------------ dependency
 if not reaper.APIExists('ImGui_GetBuiltinPath') then
   reaper.ShowMessageBox(
-    'Name Colorizer needs ReaImGui, which is not installed.\n\n' ..
+    'AutoColor needs ReaImGui, which is not installed.\n\n' ..
     'Extensions > ReaPack > Browse packages > search "ReaImGui"\n' ..
     '> right-click > Install, then restart REAPER.\n\n' ..
     'The Apply and Clear actions work without it.',
-    'Name Colorizer: missing dependency', 0)
+    'AutoColor: missing dependency', 0)
   return
 end
 
@@ -26,7 +26,7 @@ if not ok then
   reaper.ShowMessageBox(
     'ReaImGui 0.10 or newer is required.\n\n' .. tostring(ImGui) ..
     '\n\nUpdate it through ReaPack and restart REAPER.',
-    'Name Colorizer: ReaImGui too old', 0)
+    'AutoColor: ReaImGui too old', 0)
   return
 end
 
@@ -38,9 +38,9 @@ if reaper.GetExtState(SECT, 'gui_open') == '1' then
   -- A stale flag would lock the window out forever, so let the user through
   -- after confirming rather than refusing outright.
   local ans = reaper.ShowMessageBox(
-    'A Name Colorizer window seems to be open already.\n\n' ..
+    'A AutoColor window seems to be open already.\n\n' ..
     'Open another one anyway? (Two windows editing the same rules can ' ..
-    'overwrite each other.)', 'Name Colorizer', 4)
+    'overwrite each other.)', 'AutoColor', 4)
   if ans ~= 6 then return end
 end
 reaper.SetExtState(SECT, 'gui_open', '1', false)
@@ -52,7 +52,7 @@ local theme  = require 'gui.theme'
 
 app.load()
 
-local ctx  = ImGui.CreateContext('Name Colorizer')
+local ctx  = ImGui.CreateContext('AutoColor')
 local FONT = ImGui.CreateFont('sans-serif')      -- 0.10: no size here
 ImGui.Attach(ctx, FONT)
 
@@ -72,7 +72,7 @@ local function frame()
   theme.push(FS)               -- before Begin, so the window itself is rounded
 
   ImGui.SetNextWindowSize(ctx, FS * 78, FS * 44, ImGui.Cond_FirstUseEver)
-  local visible, open = ImGui.Begin(ctx, 'Name Colorizer', true)
+  local visible, open = ImGui.Begin(ctx, 'AutoColor', true)
 
   if visible then
     -- Rule edits live in a file, not the project, so REAPER's undo cannot

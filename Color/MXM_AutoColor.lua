@@ -1,11 +1,11 @@
 --[[
-Description: Name Colorizer
+Description: AutoColor
 Version: 1.0.0
 Author: Michal MaXyM Bartak
 Links:
-  GitHub https://github.com/michal-bartak/ReaColorizer
+  GitHub https://github.com/michal-bartak/AutoColor
 About:
-  # Name Colorizer
+  # AutoColor
 
   Colour tracks, items, regions and markers from their **names**, using plain
   substring, glob, or **real regular expressions**.
@@ -17,14 +17,14 @@ About:
   The configuration window needs ReaImGui 0.10+. Every other action, including
   Apply and Clear, works without it.
 
-  MIT licensed. Source: <https://github.com/michal-bartak/ReaColorizer>
+  MIT licensed. Source: <https://github.com/michal-bartak/AutoColor>
 Metapackage: true
 Changelog:
   Initial ReaPack release
 Provides:
-  [main] /Reaper/Scripts/MXM_NameColorizer/MXM_NameColorizer_*.lua > MXM_NameColorizer/
-  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/*.lua > MXM_NameColorizer/lib/
-  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/gui/*.lua > MXM_NameColorizer/lib/gui/
+  [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_*.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/lib/*.lua > MXM_AutoColor/lib/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/lib/gui/*.lua > MXM_AutoColor/lib/gui/
   [data] /Reaper/Data/toolbar_icons/*.png > toolbar_icons/
   [data] /Reaper/Data/toolbar_icons/150/*.png > toolbar_icons/150/
   [data] /Reaper/Data/toolbar_icons/200/*.png > toolbar_icons/200/

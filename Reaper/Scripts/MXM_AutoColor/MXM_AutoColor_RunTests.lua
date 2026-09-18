@@ -1,8 +1,8 @@
 --[[
-  MXM_NameColorizer_RunTests.lua -- assertions for the matching layer.
+  MXM_AutoColor_RunTests.lua -- assertions for the matching layer.
 
   Runs either inside REAPER (results go to the ReaScript console) or standalone
-  from a terminal (`lua MXM_NameColorizer_RunTests.lua`), which is much faster to
+  from a terminal (`lua MXM_AutoColor_RunTests.lua`), which is much faster to
   iterate on. Nothing here touches project state.
 ]]
 
@@ -1447,7 +1447,7 @@ end
 ------------------------------------------------------------------- report
 local lines = {}
 lines[#lines + 1] = ''
-lines[#lines + 1] = '=== NameColorizer regex tests ==='
+lines[#lines + 1] = '=== AutoColor regex tests ==='
 if fail > 0 then
   for _, f in ipairs(failures) do
     lines[#lines + 1] = '  FAIL  ' .. f

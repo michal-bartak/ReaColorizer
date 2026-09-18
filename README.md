@@ -1,4 +1,4 @@
-# <img src="icon/reacolorizer-128.png" width="30" align="top" alt=""> Name Colorizer for REAPER
+# <img src="icon/autocolor-128.png" width="30" align="top" alt=""> AutoColor for REAPER
 
 Colour tracks, items, regions and markers from their **names**, using plain
 substring, glob, or **real regular expressions**.
@@ -25,23 +25,23 @@ https://github.com/michal-bartak/ReaPack/raw/main/index.xml
 ```
 
 In REAPER: *Extensions → ReaPack → Import repositories*, paste the URL, then
-*Browse packages* and install **Name Colorizer**. Every action below is added
+*Browse packages* and install **AutoColor**. Every action below is added
 to the Action List for you, and updates arrive through ReaPack from then on.
 
-By hand instead: copy `Reaper/Scripts/MXM_NameColorizer` into your REAPER
+By hand instead: copy `Reaper/Scripts/MXM_AutoColor` into your REAPER
 `Scripts` folder, then add the actions you want in *Actions → Show action
 list → New action → Load ReaScript*.
 
 | Script | What it does |
 |---|---|
-| `MXM_NameColorizer_GUI.lua` | the configuration window |
-| `MXM_NameColorizer_ApplyAll.lua` | colour the whole project, one undo point |
-| `MXM_NameColorizer_ApplySelection.lua` | colour the selected tracks and items |
-| `MXM_NameColorizer_ClearColors.lua` | reset colours to default |
-| `MXM_NameColorizer_AutoToggle.lua` | start/stop background auto-colouring |
-| `MXM_NameColorizer_Dump.lua` | read-only diagnostic listing |
-| `MXM_NameColorizer_WhyThisColour.lua` | explain one object: which rule claimed it, and why |
-| `MXM_NameColorizer_RunTests.lua` | self-test, prints to the console |
+| `MXM_AutoColor_GUI.lua` | the configuration window |
+| `MXM_AutoColor_ApplyAll.lua` | colour the whole project, one undo point |
+| `MXM_AutoColor_ApplySelection.lua` | colour the selected tracks and items |
+| `MXM_AutoColor_ClearColors.lua` | reset colours to default |
+| `MXM_AutoColor_AutoToggle.lua` | start/stop background auto-colouring |
+| `MXM_AutoColor_Dump.lua` | read-only diagnostic listing |
+| `MXM_AutoColor_WhyThisColour.lua` | explain one object: which rule claimed it, and why |
+| `MXM_AutoColor_RunTests.lua` | self-test, prints to the console |
 
 ## Rules
 
@@ -179,7 +179,7 @@ Two things to know about gradients:
 
 ## Auto-apply
 
-`MXM_NameColorizer_AutoToggle.lua` starts a background loop; run it again to
+`MXM_AutoColor_AutoToggle.lua` starts a background loop; run it again to
 stop. The toolbar button lights while it runs.
 
 It is built to stay out of your way:
@@ -215,11 +215,11 @@ Opening the configuration window does **not** stop or pause the background loop.
 The window shows its status and has its own Pause button; the loop itself is
 started and stopped only by the `AutoToggle` action.
 
-Set the ExtState `MXM_NameColorizer` / `auto_debug` to `1` for a console readout.
+Set the ExtState `MXM_AutoColor` / `auto_debug` to `1` for a console readout.
 
 ## Clearing colours
 
-`MXM_NameColorizer_ClearColors.lua` offers two scopes: the selection, or
+`MXM_AutoColor_ClearColors.lua` offers two scopes: the selection, or
 everything the current rules match. Clearing *every* custom colour in a project
 is only available from the GUI, where it can be confirmed properly.
 
@@ -263,7 +263,7 @@ the track rule instead.
 ## Configuration file
 
 ```
-<REAPER resource path>/NameColorizer/config.json
+<REAPER resource path>/AutoColor/config.json
 ```
 
 One global rule set shared by every project, deliberately outside `Scripts/` so
@@ -308,10 +308,10 @@ Three read-mostly helpers, useful when a colour is not what you expected:
 
 | Script | What it tells you |
 |---|---|
-| `MXM_NameColorizer_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
-| `MXM_NameColorizer_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
-| `MXM_NameColorizer_TakeColorProbe.lua` | Whether your REAPER displays take colours over item colours |
-| `MXM_NameColorizer_MakeTestProject.lua` | Builds a scratch project covering the awkward cases, in a new tab |
+| `MXM_AutoColor_WhyThisColour.lua` | Select a track or item: which rule claimed it, what the rules would set, whether anything is applying, and why an old colour survived |
+| `MXM_AutoColor_Dump.lua` | Every track, item, region and marker with its name, GUID and current colour |
+| `MXM_AutoColor_TakeColorProbe.lua` | Whether your REAPER displays take colours over item colours |
+| `MXM_AutoColor_MakeTestProject.lua` | Builds a scratch project covering the awkward cases, in a new tab |
 
 ## Known limitations
 
@@ -338,7 +338,7 @@ Three read-mostly helpers, useful when a colour is not what you expected:
   carry colours, and because take colours travel with a copy/paste, a stale one
   follows an item onto a track it no longer belongs to.
   If you deliberately colour takes, do not use this tool on items.
-  `MXM_NameColorizer_TakeColorProbe.lua` reports what your setup displays.
+  `MXM_AutoColor_TakeColorProbe.lua` reports what your setup displays.
 * **The master track is not supported.** REAPER does not honour a custom colour
   on it — not through this tool, and not through REAPER's own track-colour
   action — so the master is never scanned and never coloured. An earlier build
@@ -358,8 +358,8 @@ Three read-mostly helpers, useful when a colour is not what you expected:
 
 ```
 Reaper/                     mirrors REAPER's resource path; this is what gets installed
-  Scripts/MXM_NameColorizer/
-    MXM_NameColorizer_*.lua actions you add to REAPER's Action List
+  Scripts/MXM_AutoColor/
+    MXM_AutoColor_*.lua actions you add to REAPER's Action List
     lib/                    the engine; lib/gui/ is the only part that uses ImGui
   Data/toolbar_icons/       the toolbar icon, at 1x, 150 and 200
 Color/                      the ReaPack manifest, and nothing else; the directory
@@ -376,10 +376,10 @@ index.xml                   generated by reapack-index; never edit by hand
 ## Documentation
 
 The user documentation lives in `docs/` and is published to GitHub Pages at
-<https://michal-bartak.github.io/ReaColorizer/>. To read it locally:
+<https://michal-bartak.github.io/AutoColor/>. To read it locally:
 
 ```bash
-make docs        # build and serve at http://localhost:4321/ReaColorizer/
+make docs        # build and serve at http://localhost:4321/AutoColor/
 make docs-dev    # live-reload dev server, for writing
 ```
 
@@ -388,7 +388,7 @@ for how the pages and their screenshots are organised.
 
 ## Tests
 
-`MXM_NameColorizer_RunTests.lua` runs from REAPER's Action List and prints a
+`MXM_AutoColor_RunTests.lua` runs from REAPER's Action List and prints a
 summary to the ReaScript console. It touches no project state and never writes
 your config.
 

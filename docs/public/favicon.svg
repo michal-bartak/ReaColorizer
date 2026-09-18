@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
-     role="img" aria-label="ReaColorizer">
-  <title>ReaColorizer</title>
+     role="img" aria-label="AutoColor">
+  <title>AutoColor</title>
   <!--
     The glob star: a six-arm asterisk, one arm per colour, drawn from the tool's own starter rule
     set (lib/config.lua, M.starter) with saturation lifted 12%. The track colours are muted so

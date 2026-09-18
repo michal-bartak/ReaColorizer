@@ -31,7 +31,7 @@ and REAPER's undo (`Cmd`/`Ctrl`+`Z`) will put them back — but it is the one cl
 lose work.
 :::
 
-`MXM_NameColorizer_ClearColors.lua` offers the first two scopes from the Action List. Clearing *every*
+`MXM_AutoColor_ClearColors.lua` offers the first two scopes from the Action List. Clearing *every*
 custom colour is deliberately GUI-only: it is not something a single keystroke should do.
 
 ## Reset unmatched objects
@@ -79,5 +79,5 @@ markers/regions they had to skip.
 
 ## Where to go next
 
-- [REAPER preferences](/ReaColorizer/configuration/reaper-preferences/) — whether item colours are drawn at all.
-- [Troubleshooting](/ReaColorizer/troubleshooting/) — a colour that will not go away.
+- [REAPER preferences](/AutoColor/configuration/reaper-preferences/) — whether item colours are drawn at all.
+- [Troubleshooting](/AutoColor/troubleshooting/) — a colour that will not go away.
