@@ -25,7 +25,14 @@ Metapackage: true
 Changelog:
   Initial ReaPack release
 Provides:
-  [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_*.lua > MXM_AutoColor/
+  [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_GUI.lua > MXM_AutoColor/
+  [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_AutoToggle.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplyAll.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplySelection.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ClearColors.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_Dump.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_RunTests.lua > MXM_AutoColor/
+  [nomain] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_WhyThisColour.lua > MXM_AutoColor/
   [nomain] /Reaper/Scripts/MXM_AutoColor/lib/*.lua > MXM_AutoColor/lib/
   [nomain] /Reaper/Scripts/MXM_AutoColor/lib/gui/*.lua > MXM_AutoColor/lib/gui/
   [data] /Reaper/Data/toolbar_icons/*.png > toolbar_icons/
