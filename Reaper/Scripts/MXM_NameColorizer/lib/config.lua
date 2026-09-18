@@ -20,7 +20,7 @@ local rulesmod = require 'rules'
 local M = {}
 
 M.VERSION     = 2
-M.EXT_SECTION = 'MXM_NameColorizer'
+M.EXT_SECTION = 'MB_NameColorizer'
 
 local function in_reaper()
   return type(reaper) == 'table' and reaper.GetResourcePath ~= nil

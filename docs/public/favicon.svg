@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64"
+     role="img" aria-label="ReaColorizer">
+  <title>ReaColorizer</title>
+  <!--
+    The glob star: a six-arm asterisk, one arm per colour, drawn from the tool's own starter rule
+    set (lib/config.lua, M.starter) with saturation lifted 12%. The track colours are muted so
+    names read over them, which an icon does not need.
+
+    Arms at 90/30/330/270/210/150 degrees from centre (32,32), inner radius 8, stroke 8 with round
+    caps. Three details are load-bearing:
+
+      * The centre gap. Without it, opposite arms fuse into one two-tone bar and the mark stops
+        reading as an asterisk.
+      * Outer radius is 26 on the diagonals but 25 on the vertical pair. Equal-length vertical
+        strokes read as longer than horizontal ones, so the vertical arms are shortened to make
+        all six look the same length.
+      * The art fills the canvas. Padding is NOT baked in here: scripts/icon.mjs insets the
+        REAPER toolbar renders to that platform's house margin, so the favicon and the docs logo
+        can still use the full box.
+
+    Stroke is 1/8 of the canvas, which holds up as 2px at a 16px favicon.
+  -->
+  <g stroke-width="8" stroke-linecap="round" fill="none">
+    <line x1="32.00" y1="24.00" x2="32.00" y2="7.00"  stroke="#BC3F35"/><!-- Kick    -->
+    <line x1="38.93" y1="28.00" x2="54.52" y2="19.00" stroke="#D17A37"/><!-- Snare   -->
+    <line x1="38.93" y1="36.00" x2="54.52" y2="45.00" stroke="#D1AC37"/><!-- Hats    -->
+    <line x1="32.00" y1="40.00" x2="32.00" y2="57.00" stroke="#39AE80"/><!-- Vocals  -->
+    <line x1="25.07" y1="36.00" x2="9.48"  y2="45.00" stroke="#3980AE"/><!-- Guitars -->
+    <line x1="25.07" y1="28.00" x2="9.48"  y2="19.00" stroke="#694AAD"/><!-- Bass    -->
+  </g>
+</svg>

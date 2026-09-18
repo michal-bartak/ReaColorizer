@@ -1,0 +1,17 @@
+{
+  "name": "reacolorizer-docs",
+  "type": "module",
+  "scripts": {
+    "icon": "node scripts/icon.mjs",
+    "shots": "python3 scripts/placeholders.py",
+    "shots:status": "python3 scripts/placeholders.py --status",
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.32.0",
+    "astro": "^5.0.0",
+    "starlight-theme-rapide": "^0.4.0"
+  }
+}
