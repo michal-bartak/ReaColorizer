@@ -1,6 +1,6 @@
 --[[
 Description: AutoColor
-Version: 1.0.0
+Version: 1.1.0
 Author: Michal MaXyM Bartak
 Links:
   GitHub https://github.com/michal-bartak/Reaper-AutoColor
@@ -23,7 +23,8 @@ About:
   MIT licensed. Source: <https://github.com/michal-bartak/Reaper-AutoColor>
 Metapackage: true
 Changelog:
-  Initial ReaPack release
+  A separate toolbar icon for the configuration window, so the two
+  buttons can be told apart at a glance.
 Provides:
   [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_GUI.lua > MXM_AutoColor/
   [main] /Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_AutoToggle.lua > MXM_AutoColor/

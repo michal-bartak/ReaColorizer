@@ -93,23 +93,29 @@ Right-click a toolbar → *Customize toolbar…* → **Add**, and pick the actio
 its state back, so its button lights while the background loop is running.
 :::
 
-### The toolbar icon
+### The toolbar icons
 
-An icon for the configuration-window button comes with the scripts — copying `Reaper/` over the
-resource path already put it in place:
+Both buttons come with an icon — installing, or copying `Reaper/` over the resource path, already
+put them in place. `mxm_toolbar_autocolor` is the star, for **AutoToggle**;
+`mxm_toolbar_autocolor_gui` is the same star with a gear at its hub, for the **window**:
 
 ```
-<resource path>/Data/toolbar_icons/mxm_toolbar_autocolor.png        90x30
-<resource path>/Data/toolbar_icons/150/mxm_toolbar_autocolor.png    135x45
-<resource path>/Data/toolbar_icons/200/mxm_toolbar_autocolor.png    180x60
+<resource path>/Data/toolbar_icons/mxm_toolbar_autocolor.png            90x30
+<resource path>/Data/toolbar_icons/150/mxm_toolbar_autocolor.png       135x45
+<resource path>/Data/toolbar_icons/200/mxm_toolbar_autocolor.png       180x60
+<resource path>/Data/toolbar_icons/mxm_toolbar_autocolor_gui.png        90x30
+<resource path>/Data/toolbar_icons/150/mxm_toolbar_autocolor_gui.png   135x45
+<resource path>/Data/toolbar_icons/200/mxm_toolbar_autocolor_gui.png   180x60
 ```
 
 It is in REAPER's own toolbar format: a three-state strip of square cells — normal, hover, pressed.
 The `150` and `200` copies are what REAPER reaches for on a hi-DPI display, and it finds them by the
 **same filename** in those subfolders, so do not rename them.
 
-To use it: restart REAPER, right-click the toolbar → *Customize toolbar…*, select the
-`MXM_AutoColor_GUI.lua` button, and pick the icon from REAPER's icon browser.
+To use them: restart REAPER, right-click the toolbar → *Customize toolbar…*, select a button and
+pick its icon from REAPER's icon browser. The file names mirror the script names, so
+`mxm_toolbar_autocolor_gui` belongs to `MXM_AutoColor_GUI.lua` and `mxm_toolbar_autocolor` to
+`MXM_AutoColor_AutoToggle.lua`.
 
 :::note[What the states look like]
 Hovering rotates the star's colours one step around the ring; pressing rotates them two. REAPER's

@@ -21,6 +21,11 @@ const REPO = dirname(DOCS);
 // to do with the site. This script lives under docs/ only because that is where node and sharp are.
 const MASTER = join(REPO, 'icon', 'icon.svg');
 
+// The configuration window gets its own toolbar button, so it gets its own master: the same star
+// with a gear at its hub. Only the toolbar strips are rendered from it. The favicon and the README
+// mark stay the plain star, which is the project's identity rather than one of its two actions.
+const MASTER_GUI = join(REPO, 'icon', 'icon-gui.svg');
+
 // REAPER toolbar icons are a 3-state horizontal strip of square cells: normal, hover, pressed.
 // Verified by measuring Data/toolbar_icons: 527 of the 529 shipped icons are exactly 90x30. Their
 // cell 2 is cell 1 at about +15% lightness and cell 3 is recoloured to the theme accent -- both
@@ -50,7 +55,13 @@ const TOOLBAR_MARGIN = 3.5 / 30;
 // the exact folder REAPER looks in and nobody copies it separately. The mxm_ prefix keeps it from
 // colliding with the 529 icons REAPER ships in that same folder.
 const TOOLBAR_DIR = join(REPO, 'Reaper', 'Data', 'toolbar_icons');
-const TOOLBAR_NAME = 'mxm_toolbar_autocolor.png';
+
+// One entry per action that has a button. The file name mirrors the script it belongs to, so the
+// two line up in REAPER's toolbar editor, where you pick an icon by name next to an action.
+const TOOLBAR_ICONS = [
+  { master: MASTER, name: 'mxm_toolbar_autocolor.png' },          // MXM_AutoColor_AutoToggle.lua
+  { master: MASTER_GUI, name: 'mxm_toolbar_autocolor_gui.png' },  // MXM_AutoColor_GUI.lua
+];
 
 /**
  * Advance every arm's colour `steps` places around the ring, so arm N takes the colour of the arm
@@ -96,36 +107,39 @@ await write(
   await sharp(Buffer.from(master)).resize(128, 128).png().toBuffer(),
 );
 
-// 3. The REAPER toolbar strips, one per resolution.
-for (const { dir, cell } of TOOLBAR_CELLS) {
-  const margin = Math.round(cell * TOOLBAR_MARGIN);
-  const art = cell - margin * 2;
-  const cells = await Promise.all(
-    STATES.map((steps) =>
-      sharp(Buffer.from(rotate(master, steps)))
-        .resize(art, art)
-        .extend({
-          top: margin,
-          bottom: margin,
-          left: margin,
-          right: margin,
-          background: { r: 0, g: 0, b: 0, alpha: 0 },
-        })
-        .png()
-        .toBuffer(),
-    ),
-  );
-  const strip = await sharp({
-    create: {
-      width: cell * 3,
-      height: cell,
-      channels: 4,
-      background: { r: 0, g: 0, b: 0, alpha: 0 },
-    },
-  })
-    .composite(cells.map((input, i) => ({ input, left: i * cell, top: 0 })))
-    .png()
-    .toBuffer();
+// 3. The REAPER toolbar strips: every icon, at every resolution.
+for (const { master: source, name } of TOOLBAR_ICONS) {
+  const art = await readFile(source, 'utf8');
+  for (const { dir, cell } of TOOLBAR_CELLS) {
+    const margin = Math.round(cell * TOOLBAR_MARGIN);
+    const box = cell - margin * 2;
+    const cells = await Promise.all(
+      STATES.map((steps) =>
+        sharp(Buffer.from(rotate(art, steps)))
+          .resize(box, box)
+          .extend({
+            top: margin,
+            bottom: margin,
+            left: margin,
+            right: margin,
+            background: { r: 0, g: 0, b: 0, alpha: 0 },
+          })
+          .png()
+          .toBuffer(),
+      ),
+    );
+    const strip = await sharp({
+      create: {
+        width: cell * 3,
+        height: cell,
+        channels: 4,
+        background: { r: 0, g: 0, b: 0, alpha: 0 },
+      },
+    })
+      .composite(cells.map((input, i) => ({ input, left: i * cell, top: 0 })))
+      .png()
+      .toBuffer();
 
-  await write(join(TOOLBAR_DIR, dir, TOOLBAR_NAME), strip);
+    await write(join(TOOLBAR_DIR, dir, name), strip);
+  }
 }
