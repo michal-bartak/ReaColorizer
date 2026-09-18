@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_Dump.lua -- read-only diagnostic.
+  MXM_NameColorizer_Dump.lua -- read-only diagnostic.
 
   Prints every track, item, region and marker with its name, GUID and current
   colour. Writes nothing. Run this first on a new project to confirm the target

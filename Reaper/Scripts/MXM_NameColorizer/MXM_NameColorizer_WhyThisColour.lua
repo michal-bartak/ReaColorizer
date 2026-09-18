@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_WhyThisColour.lua -- explain one object.
+  MXM_NameColorizer_WhyThisColour.lua -- explain one object.
 
   Select a track or an item and run this. It reports what colour the rules
   would give it, which rule decided, and -- when nothing is happening -- why.
@@ -147,7 +147,7 @@ if desired[idx] == nil then
     w('VERDICT: no rule claims this %s, and "reset when unmatched" IS on for', me.kind)
     w('         %ss -- so Apply WOULD reset it to the default colour.', me.kind)
     w('         If it has not been reset, nothing has applied the rules yet:')
-    w('         press "Apply now", or start MB_NameColorizer_AutoToggle.lua.')
+    w('         press "Apply now", or start MXM_NameColorizer_AutoToggle.lua.')
   else
     w('VERDICT: no rule claims this %s, and "reset when unmatched" is OFF for', me.kind)
     w('         %ss, so its existing colour is LEFT ALONE. That is why an old', me.kind)
@@ -161,7 +161,7 @@ elseif desired[idx] == cur then
 else
   w('VERDICT: Apply WOULD change it, %s -> %s.', hex(cur), hex(desired[idx]))
   w('         If it has not changed, nothing has applied the rules yet:')
-  w('         press "Apply now", or start MB_NameColorizer_AutoToggle.lua.')
+  w('         press "Apply now", or start MXM_NameColorizer_AutoToggle.lua.')
 end
 
 -- environment, since "nothing happens" is usually one of these

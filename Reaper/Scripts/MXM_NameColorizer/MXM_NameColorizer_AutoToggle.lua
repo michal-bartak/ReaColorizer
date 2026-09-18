@@ -1,11 +1,11 @@
 --[[
-  MB_NameColorizer_AutoToggle.lua -- start/stop background auto-colouring.
+  MXM_NameColorizer_AutoToggle.lua -- start/stop background auto-colouring.
 
   Run once to start (the toolbar button lights up), run again to stop. Only one
   instance can be live: the second launch clears the shared instance token,
   which the running one notices on its next tick and exits.
 
-  Set the ExtState MB_NameColorizer / auto_debug to "1" for a periodic console
+  Set the ExtState MXM_NameColorizer / auto_debug to "1" for a periodic console
   readout of ticks, sweeps, writes and per-tick cost.
 ]]
 

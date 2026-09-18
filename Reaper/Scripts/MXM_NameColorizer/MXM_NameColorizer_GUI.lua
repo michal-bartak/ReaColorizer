@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_GUI.lua -- the configuration window.
+  MXM_NameColorizer_GUI.lua -- the configuration window.
 
   Requires ReaImGui 0.10+. Everything else in this package works without it.
 ]]

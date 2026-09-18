@@ -8,3 +8,6 @@ config.bad.json
 
 # test scratch
 tests/.tmp/
+
+# Claude Code session data and worktrees (248M of node_modules in here)
+.claude/

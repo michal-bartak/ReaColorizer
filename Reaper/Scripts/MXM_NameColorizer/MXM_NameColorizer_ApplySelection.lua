@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_ApplySelection.lua
+  MXM_NameColorizer_ApplySelection.lua
   Apply the rule set to the selected tracks and items only. Never touches
   regions or markers, which have no meaningful "selection" here.
 ]]

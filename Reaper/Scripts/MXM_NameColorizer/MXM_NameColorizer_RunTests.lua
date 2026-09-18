@@ -1,8 +1,8 @@
 --[[
-  MB_NameColorizer_RunTests.lua -- assertions for the matching layer.
+  MXM_NameColorizer_RunTests.lua -- assertions for the matching layer.
 
   Runs either inside REAPER (results go to the ReaScript console) or standalone
-  from a terminal (`lua MB_NameColorizer_RunTests.lua`), which is much faster to
+  from a terminal (`lua MXM_NameColorizer_RunTests.lua`), which is much faster to
   iterate on. Nothing here touches project state.
 ]]
 

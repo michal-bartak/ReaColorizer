@@ -443,7 +443,7 @@ REAPER resolves this for its own `...depending on focus` actions with the cursor
 context, and `targets.selection_focus` does the same. Inventing a different rule
 would make this tool behave unlike everything around it.
 
-**Measured, not assumed** (`MB_NameColorizer_FocusProbe.lua`):
+**Measured, not assumed** (`MXM_NameColorizer_FocusProbe.lua`):
 
 * `GetCursorContext()` is **useless from a script**. It reported `-1` (unknown)
   on every run, because the running action is not the arrange view.

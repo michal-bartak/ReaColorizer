@@ -1,5 +1,5 @@
 --[[
-  MB_NameColorizer_TakeColorProbe.lua -- does a TAKE colour actually show?
+  MXM_NameColorizer_TakeColorProbe.lua -- does a TAKE colour actually show?
 
   Select one media item, run this. It sets a distinct colour on the active take
   (nothing else), reports what REAPER says it will display, then offers to put

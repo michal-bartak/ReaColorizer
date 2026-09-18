@@ -273,7 +273,7 @@ end
 function M.toggle_auto()
   local cmd = M.auto_command_id()
   if not cmd then
-    M.toast('Run the action MB_NameColorizer_AutoToggle.lua once first -- ' ..
+    M.toast('Run the action MXM_NameColorizer_AutoToggle.lua once first -- ' ..
             'after that this button can start and stop it.')
     return false
   end
