@@ -22,9 +22,9 @@ Metapackage: true
 Changelog:
   Initial ReaPack release
 Provides:
-  [main] /Reaper/Scripts/MXM_NameColorizer/MXM_NameColorizer_*.lua > ./
-  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/*.lua > lib/
-  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/gui/*.lua > lib/gui/
+  [main] /Reaper/Scripts/MXM_NameColorizer/MXM_NameColorizer_*.lua > MXM_NameColorizer/
+  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/*.lua > MXM_NameColorizer/lib/
+  [nomain] /Reaper/Scripts/MXM_NameColorizer/lib/gui/*.lua > MXM_NameColorizer/lib/gui/
   [data] /Reaper/Data/toolbar_icons/*.png > toolbar_icons/
   [data] /Reaper/Data/toolbar_icons/150/*.png > toolbar_icons/150/
   [data] /Reaper/Data/toolbar_icons/200/*.png > toolbar_icons/200/

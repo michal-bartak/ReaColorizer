@@ -362,8 +362,8 @@ Reaper/                     mirrors REAPER's resource path; this is what gets in
     MXM_NameColorizer_*.lua actions you add to REAPER's Action List
     lib/                    the engine; lib/gui/ is the only part that uses ImGui
   Data/toolbar_icons/       the toolbar icon, at 1x, 150 and 200
-NameColorizer/              the ReaPack manifest, and nothing else; its directory
-                            name is what names the package's ReaPack category
+Color/                      the ReaPack manifest, and nothing else; the directory
+                            name is the ReaPack category the package appears in
 dev/                        author-only probes, deliberately not shipped
 tests/                      runs outside REAPER against a mocked API
 icon/                       icon.svg, the master every icon output is rendered from
