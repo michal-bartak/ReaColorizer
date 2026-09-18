@@ -71,19 +71,22 @@ resource path, so installing is one copy.
 
 ## The actions
 
-| Script | What it does |
-|---|---|
-| `MXM_AutoColor_GUI.lua` | The configuration window |
-| `MXM_AutoColor_ApplyAll.lua` | Colour the whole project, one undo point |
-| `MXM_AutoColor_ApplySelection.lua` | Colour the selected tracks and items |
-| `MXM_AutoColor_ClearColors.lua` | Reset colours to the theme default |
-| `MXM_AutoColor_AutoToggle.lua` | Start/stop background auto-colouring |
-| `MXM_AutoColor_WhyThisColour.lua` | Explain the colour on the selected track or item |
-| `MXM_AutoColor_Dump.lua` | Read-only diagnostic listing |
-| `MXM_AutoColor_RunTests.lua` | Self-test, prints to the ReaScript console |
+| Script | What it does | In the Action List |
+|---|---|---|
+| `MXM_AutoColor_GUI.lua` | The configuration window | added for you |
+| `MXM_AutoColor_ApplyAll.lua` | Colour the whole project, one undo point | add it yourself |
+| `MXM_AutoColor_ApplySelection.lua` | Colour the selected tracks and items | add it yourself |
+| `MXM_AutoColor_ClearColors.lua` | Reset colours to the theme default | add it yourself |
+| `MXM_AutoColor_AutoToggle.lua` | Start/stop background auto-colouring | added for you |
+| `MXM_AutoColor_WhyThisColour.lua` | Explain the colour on the selected track or item | add it yourself |
+| `MXM_AutoColor_Dump.lua` | Read-only diagnostic listing | add it yourself |
+| `MXM_AutoColor_RunTests.lua` | Self-test, prints to the ReaScript console | add it yourself |
 
-You do not need all of them. `GUI` and `AutoToggle` are enough for most setups; the rest are there
-for keyboard shortcuts and for diagnosing a colour that looks wrong.
+Installing adds only `GUI` and `AutoToggle` to the Action List, which is all most setups need. The
+rest are installed alongside them but left out of the list, so it does not fill up with entries you
+will never run. Add any of them whenever you want a keyboard shortcut, or to diagnose a colour that
+looks wrong: *Actions → Show action list → New action → Load ReaScript*, then pick the file from
+`Scripts/MXM Scripts/Color/MXM_AutoColor/`.
 
 :::tip[Toolbar buttons]
 Right-click a toolbar → *Customize toolbar…* → **Add**, and pick the action. `AutoToggle` reports

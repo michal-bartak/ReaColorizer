@@ -32,16 +32,16 @@ By hand instead: copy `Reaper/Scripts/MXM_AutoColor` into your REAPER
 `Scripts` folder, then add the actions you want in *Actions → Show action
 list → New action → Load ReaScript*.
 
-| Script | What it does |
-|---|---|
-| `MXM_AutoColor_GUI.lua` | the configuration window |
-| `MXM_AutoColor_ApplyAll.lua` | colour the whole project, one undo point |
-| `MXM_AutoColor_ApplySelection.lua` | colour the selected tracks and items |
-| `MXM_AutoColor_ClearColors.lua` | reset colours to default |
-| `MXM_AutoColor_AutoToggle.lua` | start/stop background auto-colouring |
-| `MXM_AutoColor_Dump.lua` | read-only diagnostic listing |
-| `MXM_AutoColor_WhyThisColour.lua` | explain one object: which rule claimed it, and why |
-| `MXM_AutoColor_RunTests.lua` | self-test, prints to the console |
+| Script | What it does | In the Action List |
+|---|---|---|
+| `MXM_AutoColor_GUI.lua` | the configuration window | added for you |
+| `MXM_AutoColor_ApplyAll.lua` | colour the whole project, one undo point | add it yourself |
+| `MXM_AutoColor_ApplySelection.lua` | colour the selected tracks and items | add it yourself |
+| `MXM_AutoColor_ClearColors.lua` | reset colours to default | add it yourself |
+| `MXM_AutoColor_AutoToggle.lua` | start/stop background auto-colouring | added for you |
+| `MXM_AutoColor_Dump.lua` | read-only diagnostic listing | add it yourself |
+| `MXM_AutoColor_WhyThisColour.lua` | explain one object: which rule claimed it, and why | add it yourself |
+| `MXM_AutoColor_RunTests.lua` | self-test, prints to the console | add it yourself |
 
 ## Rules
 
