@@ -17,6 +17,15 @@
   Everything is sized off the font, so it stays proportionate at any text size
   and on any display. Nothing here multiplies by the DPI scale -- ReaImGui
   already works in logical units.
+
+  One trap, measured rather than assumed: GetFontSize() is the size ASKED FOR,
+  and ImGui lays out from the baked line height, which is larger -- 12 against
+  16.50 on the probe, a factor of 1.375. GetFrameHeight() is line height + 2 *
+  padding.y, NOT font size + 2 * padding.y. The tweakables below are multiples
+  of GetFontSize because that is the knob the user turns and they were tuned
+  against it; anywhere the code has to PREDICT a rect ImGui will build, it must
+  use M.text_height() instead. Getting that wrong is what put the checkbox tick
+  in the corner of its box. See dev/MXM_AutoColor_MetricsProbe.lua.
 ]]
 
 local M = {}
@@ -47,12 +56,41 @@ M.UNIFY_TABS      = true   -- give an UNSELECTED tab the button background, so
                            -- same surface. The selected tab is left alone --
                            -- it has to stay distinct, and the table's header
                            -- row takes its colour.
-M.CHECKBOX_SCALE  = 0.62   -- x the normal control height; the tick box only
+M.CHECKBOX_SCALE  = 0.62   -- x the normal control height; the tick box only.
+                           -- FLOORS at text height / frame height -- 0.73 at
+                           -- the default padding. ImGui builds the square from
+                           -- the line height plus FramePadding, and padding
+                           -- cannot go negative, so no smaller box exists.
 M.SWATCH_GAP      = 4      -- logical px between the two colour swatches and [+]/[x]
 
 M.GHOST_CHECK       = 0x000000  -- a faint tick drawn on UNticked checkboxes,
 M.GHOST_CHECK_ALPHA = 0.30      -- so the box reads as a checkbox either way
 M.CHECK_THICKNESS   = 0.15      -- x the box height
+
+M.GLYPH_NUDGE_Y   = -0.02  -- x the text height; lifts a glyph off the line box.
+                           -- ImGui centres the text's LINE BOX, and the baked
+                           -- font reserves more air above the capitals (room
+                           -- for accents) than below the descenders, so a
+                           -- line-box-centred glyph reads low. Measured on the
+                           -- probe at 175%: '+' sat 2.5 device px low, 'x' 3.0,
+                           -- against a text height of 16.5 -- geometric centre
+                           -- is 0.09. Tuned down from there by eye, a device
+                           -- pixel at a time -- 0.09 then 0.055 then 0.02, each
+                           -- step 0.035 of the em, which is 1/1.75 = 0.571
+                           -- logical at this scale. Geometric centre reads high
+                           -- because the eye weights the ink, not the box.
+                           --
+                           -- Every button goes through M.button, so this is the
+                           -- one knob for all of them. Tabs are NOT among them:
+                           -- their label belongs to ImGui and moves only by
+                           -- cropping the tab, see TAB_SHELF_BITE.
+                           --
+                           -- A FRACTION of the text height, so it holds at any
+                           -- font size. That means the offset from geometric
+                           -- centre is one device pixel at font size 12 and
+                           -- grows with the text -- proportional, not a fixed
+                           -- pixel, which is what keeps it looking the same as
+                           -- the size changes.
 
 M.MODAL_PAD       = 1.20   -- x font size; padding inside a modal dialog
 M.DIM_CONTENT     = 0.30   -- 0..1; opacity of the window's content while a
@@ -74,6 +112,19 @@ M.HEADER_FOLLOWS_TAB = true  -- paint the table's header row in the open tab's
 M.TAB_INSET       = 1      -- logical px the tab strip is shifted right, to sit
                            -- on the table's header FILL rather than on its
                            -- outer border one pixel further left
+M.TAB_SHELF_BITE  = 0.035  -- x the text height; how far the table rides UP over
+                           -- the bottom of the tab strip. The table is drawn
+                           -- after the tabs, so it paints over them, and every
+                           -- unit of bite crops the visible tab from below,
+                           -- lowering where its label sits in what is left --
+                           -- by the FULL bite, measured, not the half the
+                           -- geometry suggests.
+                           --
+                           -- Bracketed by eye at font 12 on a 175% display:
+                           -- 0 read a pixel high, 0.07 (1.155 logical = 2.02
+                           -- device px) a pixel low, so 0.035 is centre. This
+                           -- was 4.5 units by accident until recently, from
+                           -- tab_paint_height computing off GetFontSize.
 
 M.HANDLE_ALPHA          = 0.50   -- the reorder grip, at rest
 M.HANDLE_ALPHA_HOVER    = 0.70
@@ -87,6 +138,12 @@ function M.init(imgui, context) ImGui, ctx = imgui, context end
 local function rgba(rgb, a)
   return ((rgb & 0xFFFFFF) << 8) | math.floor((a or 1) * 255)
 end
+
+--- Round to a whole LOGICAL pixel. Every padding goes through this: a
+--- fractional one puts each frame's edges on half a pixel, and the halves round
+--- in opposite directions top and bottom, so the control's padding comes out
+--- asymmetric. See push_tab_padding for the measured case that found it.
+local function px(v) return math.floor(v + 0.5) end
 
 --- Fade a colour that ImGui is already using, rather than inventing one, so
 --- this keeps working if the user changes REAPER's theme.
@@ -126,7 +183,7 @@ function M.push(FS)
   var(ImGui.StyleVar_GrabRounding,      r)
   var(ImGui.StyleVar_ScrollbarRounding, r)
 
-  var(ImGui.StyleVar_FramePadding, FS * M.PAD_X, FS * M.PAD_Y)
+  var(ImGui.StyleVar_FramePadding, px(FS * M.PAD_X), px(FS * M.PAD_Y))
 
   -- Checkboxes, text fields and combos all draw on Col_FrameBg, while buttons
   -- draw on Col_Button -- which is why a checkbox looks unlike a button in most
@@ -182,8 +239,6 @@ end
 ---
 --- The glyph widths were all whole numbers (69, 54, 73, 70), so the padding was
 --- the only fractional term and rounding it makes every gap exactly 4.00.
-local function px(v) return math.floor(v + 0.5) end
-
 function M.push_tab_padding(FS)
   ImGui.PushStyleVar(ctx, ImGui.StyleVar_FramePadding,
                      px(FS * M.TAB_PAD_X), px(FS * M.TAB_PAD_Y))
@@ -191,6 +246,15 @@ end
 
 function M.pop_tab_padding()
   ImGui.PopStyleVar(ctx)
+end
+
+--- The height ImGui actually lays a line of text out with -- the number that
+--- drives GetFrameHeight and every rect ImGui derives from it. NOT
+--- GetFontSize(), which is only the size that was requested: measured 16.50
+--- against a reported 12. Must be called inside a frame.
+function M.text_height()
+  local _, h = ImGui.CalcTextSize(ctx, 'X')
+  return h
 end
 
 ----------------------------------------------------------------- centring
@@ -231,10 +295,14 @@ end
 --- @return changed, value
 function M.checkbox(label, value, centred)
   local full = ImGui.GetFrameHeight(ctx)
+  local th   = M.text_height()
   local want = full * M.CHECKBOX_SCALE
-  -- box height = font size + 2*padding.y, so solve for the padding we need
-  local pad  = math.max(0, (want - ImGui.GetFontSize(ctx)) * 0.5)
-  local box  = ImGui.GetFontSize(ctx) + pad * 2
+  -- ImGui's square is GetFrameHeight() taken with whatever padding is pushed --
+  -- text height + 2*padding.y. Solve for the padding against the TEXT HEIGHT,
+  -- or `box` describes a square that was never painted: at font size 12 the
+  -- old line solved against 12 and got 13.95, while ImGui drew 18.45.
+  local pad  = math.max(0, (want - th) * 0.5)
+  local box  = th + pad * 2
 
   -- Take the theme's tick colour before hiding the built-in mark, so the
   -- "on" state still matches whatever REAPER's theme uses.
@@ -253,13 +321,17 @@ function M.checkbox(label, value, centred)
   ImGui.PopStyleColor(ctx)
   ImGui.PopStyleVar(ctx)
 
-  -- The item rect spans box AND label, and with a shrunken box it can be
-  -- taller than the box itself, so derive the square from `box` rather than
-  -- assuming the rect is one.
+  -- The item rect spans box AND label, so its WIDTH is not the square -- but
+  -- its height is, the frame being square. Centre the tick in that rather than
+  -- trusting `box`: with the padding solved correctly the two now agree and the
+  -- offset is zero, but this is what kept the tick off the left edge when they
+  -- did not, and it costs a subtraction.
   local x0, y0 = ImGui.GetItemRectMin(ctx)
   local _,  y1 = ImGui.GetItemRectMax(ctx)
   if x0 then
-    draw_tick(x0, y0 + ((y1 - y0) - box) * 0.5, box, v and markcol or ghost)
+    local sq  = y1 - y0
+    local off = (sq - box) * 0.5
+    draw_tick(x0 + off, y0 + off, box, v and markcol or ghost)
   end
 
   return rv, v
@@ -341,6 +413,53 @@ function M.center_text(s)
 end
 
 --------------------------------------------------------------- small bits
+--- A button that draws its OWN label, so the text sits where it looks centred
+--- rather than where ImGui puts it.
+---
+--- ImGui centres the text's LINE BOX, and the baked font's air is not evenly
+--- split around the ink -- see M.GLYPH_NUDGE_Y. There is no style var to reach
+--- it either: after FramePadding a button's inner rect is exactly one line box
+--- tall, so ButtonTextAlign has no slack and its y is a no-op. Drawing the text
+--- is the only way in.
+---
+--- Same signature as ImGui.Button. Use this for every button in the window, or
+--- the corrected ones sit a pixel off the rest.
+--- @param label  visible text, optionally with an '##id' suffix
+--- @param w      width; nil or 0 auto-sizes to the label
+--- @return true when clicked
+function M.button(label, w, h)
+  local text = label:match('^(.-)##') or label
+  local tw, th = ImGui.CalcTextSize(ctx, text)
+
+  -- The button is given NOTHING to draw, so left to auto-size it would come out
+  -- as two paddings and no text. Width has to be worked out here. Height still
+  -- auto-sizes correctly: CalcTextSize of an empty string returns a zero width
+  -- but a full line's height, which is what ImGui pads.
+  if not w or w == 0 then
+    local fpx = ImGui.GetStyleVar(ctx, ImGui.StyleVar_FramePadding)
+    w = tw + 2 * fpx
+  end
+
+  -- '##' .. label: nothing visible, and the whole string is still the id, so
+  -- two buttons with the same text stay distinct.
+  local clicked = ImGui.Button(ctx, '##' .. label, w, h or 0)
+
+  local x0, y0 = ImGui.GetItemRectMin(ctx)
+  local x1, y1 = ImGui.GetItemRectMax(ctx)
+  if x0 and text ~= '' then
+    -- GetColor, not GetStyleColor: it applies the global style alpha, so a
+    -- button inside BeginDisabled dims its label like any other.
+    local col = (ImGui.GetColor and ImGui.GetColor(ctx, ImGui.Col_Text))
+                or ImGui.GetStyleColor(ctx, ImGui.Col_Text)
+    ImGui.DrawList_AddText(ImGui.GetWindowDrawList(ctx),
+                           x0 + ((x1 - x0) - tw) * 0.5,
+                           y0 + ((y1 - y0) - th) * 0.5 + th * M.GLYPH_NUDGE_Y,
+                           col, text)
+  end
+
+  return clicked
+end
+
 --- A square button, so a row of them lines up regardless of how wide the
 --- glyph inside happens to be. SmallButton sizes itself to its text, which is
 --- why [+] and [x] came out different widths.
@@ -348,7 +467,7 @@ end
 function M.icon_button(label, centred)
   local sz = ImGui.GetFrameHeight(ctx)
   if centred then M.center(sz) end
-  return ImGui.Button(ctx, label, sz, sz)
+  return M.button(label, sz, sz)
 end
 
 function M.icon_size()
@@ -389,7 +508,7 @@ function M.segmented(id, items, current)
       ImGui.PushStyleColor(ctx, ImGui.Col_Button, sel)
       ImGui.PushStyleColor(ctx, ImGui.Col_ButtonHovered, sel)
     end
-    if ImGui.Button(ctx, it.label .. '##' .. id .. i, w, 0) then picked = it.value end
+    if M.button(it.label .. '##' .. id .. i, w, 0) then picked = it.value end
     if on then ImGui.PopStyleColor(ctx, 2) end
   end
 
@@ -440,12 +559,24 @@ function M.tab_selected_color()
   return ImGui.GetStyleColor(ctx, ImGui.Col_TabSelected)
 end
 
---- The height a tab is actually PAINTED: font size plus its own padding, top
---- and bottom. ImGui's tab bar reserves more room than this -- measured 31
---- against a painted 28 -- for its overline and border, and the cursor lands
---- below the reserved edge, not the painted one.
+--- The height a tab is actually PAINTED: one line of text plus the strip's
+--- padding, top and bottom. ImGui's tab bar reserves more room than this --
+--- measured 31 against a painted 28 -- for its overline and border, and the
+--- cursor lands below the reserved edge, not the painted one.
+---
+--- Text height, NOT FS: ImGui paints from the baked line height, and at font
+--- size 12 that is 16.5. Computing from 12 made this 4.5 short, so the gap it
+--- was asked to close came out 4.5 too wide.
+---
+--- The BAR's padding, always. A tab item padded LESS than its bar shrinks; one
+--- padded MORE is clamped to the bar and gains nothing -- measured on the probe
+--- at font 12: item padding 6.9075 still painted 28.50, which is 16.5 + 2*6.
+--- That clamp is why a tab label cannot be centred by padding: the ink sits
+--- ~1.4 units below the box centre and closing that needs a box 31.4 tall
+--- against a bar that caps it at 28.5. Only hand-drawing the strip would move
+--- it, which is not worth 2px.
 function M.tab_paint_height(FS)
-  return FS + 2 * px(FS * M.TAB_PAD_Y)
+  return M.text_height() + 2 * px(FS * M.TAB_PAD_Y)
 end
 
 --- Butt the next item up against the PAINTED bottom of the tab strip.
@@ -460,6 +591,7 @@ function M.close_tab_gap(FS, tab_h)
   local _, sy = ImGui.GetStyleVar(ctx, ImGui.StyleVar_ItemSpacing)
   local reserved = 0
   if tab_h then reserved = math.max(0, tab_h - M.tab_paint_height(FS)) end
+  reserved = reserved + M.TAB_SHELF_BITE * M.text_height()
   ImGui.SetCursorPosY(ctx, ImGui.GetCursorPosY(ctx) - sy - reserved)
 end
 

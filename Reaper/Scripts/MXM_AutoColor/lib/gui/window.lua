@@ -181,7 +181,7 @@ local function options_popup(FS)
 
   theme.section('Rules file', true)
   ImGui.TextColored(ctx, rgba(COL_DIM), config.path())
-  if ImGui.Button(ctx, 'Replace with the starter rules...') then
+  if theme.button('Replace with the starter rules...') then
     local ans = reaper.ShowMessageBox(
       'Replace your current rules with the built-in starter set?\n\n' ..
       'Your existing rules will be gone. This can be undone with the ' ..
@@ -200,7 +200,7 @@ local function options_popup(FS)
   ImGui.Spacing(ctx)
   local bw = FS * 8
   theme.center(bw)
-  if ImGui.Button(ctx, 'Close', bw) then ImGui.CloseCurrentPopup(ctx) end
+  if theme.button('Close', bw) then ImGui.CloseCurrentPopup(ctx) end
 
   ImGui.EndPopup(ctx)
 end
@@ -250,7 +250,7 @@ local function auto_button(FS, w)
   else                    label, col = 'Auto: on',     COL_OK end
 
   ImGui.PushStyleColor(ctx, ImGui.Col_Text, rgba(col))
-  local clicked = ImGui.Button(ctx, label, w)
+  local clicked = theme.button(label, w)
   ImGui.PopStyleColor(ctx)
 
   if ImGui.IsItemHovered(ctx) then
@@ -278,7 +278,7 @@ local function action_bar(FS)
 
   -- editing the list first, since that is what the table above is for
   local kindnoun = rulesmod.KIND_NOUN[app.st.active_kind] or 'rule'
-  if ImGui.Button(ctx, '+ ' .. kindnoun .. ' rule', FS * 8) then app.add_rule() end
+  if theme.button('+ ' .. kindnoun .. ' rule', FS * 8) then app.add_rule() end
   if ImGui.IsItemHovered(ctx) then
     ImGui.SetTooltip(ctx, 'Add a rule to the ' ..
                           (rulesmod.KIND_LABEL[app.st.active_kind] or '') .. ' tab.')
@@ -286,7 +286,7 @@ local function action_bar(FS)
 
   ImGui.SameLine(ctx)
   ImGui.BeginDisabled(ctx, not app.can_undo())
-  if ImGui.Button(ctx, 'Undo', FS * 4) then app.undo() end
+  if theme.button('Undo', FS * 4) then app.undo() end
   ImGui.EndDisabled(ctx)
   if ImGui.IsItemHovered(ctx) then
     ImGui.SetTooltip(ctx, 'Undo a change to the RULES (Cmd+Z in this window).\n' ..
@@ -297,7 +297,7 @@ local function action_bar(FS)
   ImGui.TextColored(ctx, rgba(COL_DIM), '|')
   ImGui.SameLine(ctx)
 
-  if ImGui.Button(ctx, 'Apply now', FS * 7) then app.apply_all() end
+  if theme.button('Apply now', FS * 7) then app.apply_all() end
   if ImGui.IsItemHovered(ctx) then
     ImGui.SetTooltip(ctx, 'Colour the whole project. One undo point.\n' ..
                           'Also tells background auto-colouring to stop treating\n' ..
@@ -305,7 +305,7 @@ local function action_bar(FS)
   end
 
   ImGui.SameLine(ctx)
-  if ImGui.Button(ctx, 'Selection', FS * 6) then app.apply_selection() end
+  if theme.button('Selection', FS * 6) then app.apply_selection() end
   if ImGui.IsItemHovered(ctx) then
     ImGui.SetTooltip(ctx, 'Colour only what is selected.\n\n' ..
                           'When a track AND some items are selected, whichever\n' ..
@@ -316,7 +316,7 @@ local function action_bar(FS)
   end
 
   ImGui.SameLine(ctx)
-  if ImGui.Button(ctx, 'Clear...', FS * 5) then ImGui.OpenPopup(ctx, 'clearmenu') end
+  if theme.button('Clear...', FS * 5) then ImGui.OpenPopup(ctx, 'clearmenu') end
   clear_popup()
 
   if st.dirty then
@@ -332,7 +332,7 @@ local function action_bar(FS)
   ImGui.SameLine(ctx, 0, gap)
   -- Only opens it. The dialog itself is drawn at the end of M.draw, outside
   -- the dimmed region, so it does not fade along with the window behind it.
-  if ImGui.Button(ctx, 'Options', wopts) then ImGui.OpenPopup(ctx, OPTIONS_POPUP) end
+  if theme.button('Options', wopts) then ImGui.OpenPopup(ctx, OPTIONS_POPUP) end
 end
 
 ------------------------------------------------------------------- the body
