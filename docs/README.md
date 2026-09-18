@@ -1,13 +1,13 @@
-# AutoColor docs
+# Reaper AutoColor docs
 
 The user documentation, built with [Astro](https://astro.build/) +
 [Starlight](https://starlight.astro.build/) and published to GitHub Pages at
-<https://michal-bartak.github.io/AutoColor/>.
+<https://michal-bartak.github.io/Reaper-AutoColor/>.
 
 From the repository root:
 
 ```bash
-make docs          # build and serve at http://localhost:4321/AutoColor/
+make docs          # build and serve at http://localhost:4321/Reaper-AutoColor/
 make docs-dev      # live-reload dev server, for writing
 ```
 
@@ -15,7 +15,7 @@ make docs-dev      # live-reload dev server, for writing
 
 ```bash
 npm install
-npm run dev        # http://localhost:4321/AutoColor/
+npm run dev        # http://localhost:4321/Reaper-AutoColor/
 npm run build      # static site into dist/
 ```
 

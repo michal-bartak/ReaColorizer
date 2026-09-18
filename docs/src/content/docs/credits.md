@@ -19,7 +19,7 @@ Created by Michal Bartak, assisted by [Claude](https://claude.ai).
 [SWS/S&M's](https://www.sws-extension.org/) Auto Color is the tool this one grew out of. It matches
 case-insensitive substrings only and has no item support; this covers tracks, items, regions and
 markers in one ordered rule list, with real regular expressions. Do not run both at once — see
-[Troubleshooting](/AutoColor/troubleshooting/#colours-keep-changing-back).
+[Troubleshooting](/Reaper-AutoColor/troubleshooting/#colours-keep-changing-back).
 
 ## License
 
@@ -27,4 +27,4 @@ Released under the MIT License. © 2026 Michal Bartak.
 
 ## Source
 
-[github.com/michal-bartak/AutoColor](https://github.com/michal-bartak/AutoColor)
+[github.com/michal-bartak/Reaper-AutoColor](https://github.com/michal-bartak/Reaper-AutoColor)

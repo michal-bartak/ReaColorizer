@@ -18,7 +18,7 @@ rename things. Run the action again to stop it. The toolbar button lights while 
 - **It never reverts a colour you set by hand.** If an object's colour stops matching what the tool
   last wrote, while its name is unchanged, that object is left alone until you rename it.
 - It adds **no undo points**, so renaming a track does not shred your undo history. Turn on
-  *Create undo points for automatic changes* in [Options](/AutoColor/configuration/) if you want
+  *Create undo points for automatic changes* in [Options](/Reaper-AutoColor/configuration/) if you want
   them.
 - It writes nothing when nothing changed, and pauses entirely **while recording**.
 - Tracks are swept immediately; items and regions follow once the project has settled, in
@@ -53,7 +53,7 @@ The rescan interval is 5 s by default, and the only thing waiting on it is an it
 place**, which nothing cheaper can see. Set it to 0 to re-read everything on every change — correct,
 and slow on a large project.
 
-`Check every (s)` and `Work budget (ms)` in [Options](/AutoColor/configuration/) control how
+`Check every (s)` and `Work budget (ms)` in [Options](/Reaper-AutoColor/configuration/) control how
 often the loop wakes and how long it may work before yielding.
 
 :::caution[Gradients on items]
@@ -69,5 +69,5 @@ doing and why.
 
 ## Where to go next
 
-- [Options](/AutoColor/configuration/) — the timing settings and undo behaviour.
-- [Troubleshooting](/AutoColor/troubleshooting/) — when a colour is not what the rules say it should be.
+- [Options](/Reaper-AutoColor/configuration/) — the timing settings and undo behaviour.
+- [Troubleshooting](/Reaper-AutoColor/troubleshooting/) — when a colour is not what the rules say it should be.

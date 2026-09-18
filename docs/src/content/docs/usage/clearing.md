@@ -79,5 +79,5 @@ markers/regions they had to skip.
 
 ## Where to go next
 
-- [REAPER preferences](/AutoColor/configuration/reaper-preferences/) — whether item colours are drawn at all.
-- [Troubleshooting](/AutoColor/troubleshooting/) — a colour that will not go away.
+- [REAPER preferences](/Reaper-AutoColor/configuration/reaper-preferences/) — whether item colours are drawn at all.
+- [Troubleshooting](/Reaper-AutoColor/troubleshooting/) — a colour that will not go away.

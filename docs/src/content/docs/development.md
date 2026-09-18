@@ -48,7 +48,7 @@ Expect `ALL GREEN`. The runner's exit status is meaningful, so it drops straight
 pre-commit hook. It covers the engine, the action scripts end to end, the background loop, the GUI
 logic and its drawing paths — against a mock REAPER and a stub ImGui — plus a differential fuzz of
 the regex engine against Python's `re`. See
-[`tests/README.md`](https://github.com/michal-bartak/AutoColor/blob/main/tests/README.md).
+[`tests/README.md`](https://github.com/michal-bartak/Reaper-AutoColor/blob/main/tests/README.md).
 
 :::caution[Reloading changed code]
 The window and the auto-toggle hold their Lua state for as long as they run. After editing anything
@@ -61,7 +61,7 @@ and on. One-shot actions pick up changes immediately.
 The site is [Astro](https://astro.build/) + [Starlight](https://starlight.astro.build/), in `docs/`:
 
 ```bash
-make docs          # build and serve at http://localhost:4321/AutoColor/
+make docs          # build and serve at http://localhost:4321/Reaper-AutoColor/
 make docs-dev      # live-reload dev server, for writing
 make docs-build    # static build into docs/dist/
 ```
@@ -122,4 +122,4 @@ width and height, so a PNG straight from REAPER is the right thing to commit.
 workflow skips itself while the repo is private and starts working the moment it is public.
 
 `site` and `base` in `astro.config.mjs` encode the published URL
-(`https://michal-bartak.github.io/AutoColor/`) — both need updating if the repository is renamed.
+(`https://michal-bartak.github.io/Reaper-AutoColor/`) — both need updating if the repository is renamed.

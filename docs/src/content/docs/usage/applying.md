@@ -5,7 +5,7 @@ description: Apply now, Selection, and the actions that do the same without the 
 
 Rules decide colours; applying is what writes them into the project. Nothing in the rule table
 touches your tracks until you apply, or until the
-[background loop](/AutoColor/usage/auto-apply/) does it for you.
+[background loop](/Reaper-AutoColor/usage/auto-apply/) does it for you.
 
 Objects that already have the colour the rules want are **not rewritten**, so applying twice costs
 nothing and changes nothing.
@@ -60,5 +60,5 @@ is then applied to everything at once, so the project is never half on the old r
 
 ## Where to go next
 
-- [Auto-apply](/AutoColor/usage/auto-apply/) — keeping the project in step without pressing anything.
-- [Clearing colours](/AutoColor/usage/clearing/) — the other direction.
+- [Auto-apply](/Reaper-AutoColor/usage/auto-apply/) — keeping the project in step without pressing anything.
+- [Clearing colours](/Reaper-AutoColor/usage/clearing/) — the other direction.

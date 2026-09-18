@@ -21,7 +21,7 @@ currently applying, and why an old colour survived.
 Almost always a REAPER display setting rather than the tool:
 
 1. **Item colours are not drawn.** *Preferences → Appearance → Peaks/Waveforms* — tick **Item color**
-   for background and/or peaks. See [REAPER preferences](/AutoColor/configuration/reaper-preferences/).
+   for background and/or peaks. See [REAPER preferences](/Reaper-AutoColor/configuration/reaper-preferences/).
 1. **A take colour is winning.** Take beats item. Confirm it by giving one item a custom colour and
    its take a different one — whichever you see is the one your build draws.
 1. **Your theme overrides it.** REAPER's own tooltip warns that a colour theme may override the tint
@@ -78,7 +78,7 @@ starts and stops the loop.
 Items and regions are re-read on a timer — **Rescan items at most every (s)**, 5 s by default —
 because REAPER reports only one project-wide "something changed" counter and re-reading every item on
 every change is expensive. Renaming in place is the one edit nothing cheaper can see. Lower the
-interval, or press **Apply now**. See [Auto-apply](/AutoColor/usage/auto-apply/#what-it-re-reads-and-when).
+interval, or press **Apply now**. See [Auto-apply](/Reaper-AutoColor/usage/auto-apply/#what-it-re-reads-and-when).
 
 ## My change to the scripts did nothing
 
@@ -103,7 +103,7 @@ not through REAPER's own track-colour action — so it is not scanned at all.
 
 ## My rules are gone
 
-Look next to [`config.json`](/AutoColor/configuration/rules-file/):
+Look next to [`config.json`](/Reaper-AutoColor/configuration/rules-file/):
 
 | File | Meaning |
 |---|---|

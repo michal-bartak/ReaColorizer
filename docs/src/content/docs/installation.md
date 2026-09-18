@@ -136,7 +136,7 @@ has something to show, and tells you where:
 
 That file is one global rule set shared by every project, and it sits **outside** `Scripts/` on
 purpose — reinstalling or updating the scripts cannot destroy your rules. See
-[Rules file](/AutoColor/configuration/rules-file/).
+[Rules file](/Reaper-AutoColor/configuration/rules-file/).
 
 :::caution[Editing the scripts]
 The window and the auto-toggle hold their Lua state for as long as they run. If you edit anything
@@ -154,5 +154,5 @@ is lost, and the previous file is kept as `config.bak.json`.
 
 After migrating you may find duplicate rules on the **Items** tab — copies of track rules that
 happened to match item *names*. If what you actually wanted was "colour the items on these tracks",
-delete the copies and tick [also colour items](/AutoColor/usage/items-and-folders/) on the track
+delete the copies and tick [also colour items](/Reaper-AutoColor/usage/items-and-folders/) on the track
 rule instead.

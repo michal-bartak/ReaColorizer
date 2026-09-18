@@ -2,14 +2,14 @@ import starlight from '@astrojs/starlight';
 import { defineConfig } from 'astro/config';
 import starlightThemeRapide from 'starlight-theme-rapide';
 
-// GitHub Pages: served at https://michal-bartak.github.io/AutoColor/
+// GitHub Pages: served at https://michal-bartak.github.io/Reaper-AutoColor/
 // (base matches the repo name). Update both if the repo is renamed.
 export default defineConfig({
   site: 'https://michal-bartak.github.io',
-  base: '/AutoColor',
+  base: '/Reaper-AutoColor',
   integrations: [
     starlight({
-      title: 'AutoColor',
+      title: 'Reaper AutoColor',
       description: 'Colour REAPER tracks, items, regions and markers from their names',
       plugins: [starlightThemeRapide()],
       // One transparent SVG serves both: the mark is mid-tone throughout, so it reads on the
@@ -38,7 +38,7 @@ export default defineConfig({
       },
       // Renames the table-of-contents' top entry from "Overview" to the page title.
       routeMiddleware: './src/starlightRouteData.ts',
-      social: { github: 'https://github.com/michal-bartak/AutoColor' },
+      social: { github: 'https://github.com/michal-bartak/Reaper-AutoColor' },
       customCss: ['./src/styles/custom.css'],
       // Click a screenshot in the docs body to view it full-size in a lightbox.
       // Runs on first load and after every Starlight client-side navigation.
@@ -47,9 +47,9 @@ export default defineConfig({
         // `favicon` above emits its own <link> and prefixes the base path for you; these do not,
         // hence the literal /AutoColor. If a browser ever shows no icon at all, delete the SVG
         // line -- a PNG favicon is the one thing every browser agrees on.
-        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/AutoColor/favicon-16.png' } },
-        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '48x48', href: '/AutoColor/favicon-48.png' } },
-        { tag: 'link', attrs: { rel: 'icon', type: 'image/svg+xml', href: '/AutoColor/favicon.svg' } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/Reaper-AutoColor/favicon-16.png' } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '48x48', href: '/Reaper-AutoColor/favicon-48.png' } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/svg+xml', href: '/Reaper-AutoColor/favicon.svg' } },
         {
           tag: 'script',
           content: `

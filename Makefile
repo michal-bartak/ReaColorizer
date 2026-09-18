@@ -7,7 +7,7 @@
 # it reads the rule -- a definition further down would expand to nothing.
 DOCS_DIR := docs
 # Matches `base` in docs/astro.config.mjs; astro preview serves the site under it.
-DOCS_URL := http://localhost:4321/AutoColor/
+DOCS_URL := http://localhost:4321/Reaper-AutoColor/
 
 help:
 	@echo "Docs (Astro + Starlight, in docs/):"
@@ -45,7 +45,7 @@ docs-install: $(DOCS_DIR)/node_modules
 # The one to reach for: build the site and serve it, exactly as published.
 docs: docs-preview
 
-# Live-reload dev server at http://localhost:4321/AutoColor/
+# Live-reload dev server at http://localhost:4321/Reaper-AutoColor/
 docs-dev: $(DOCS_DIR)/node_modules docs-shots
 	cd $(DOCS_DIR) && npm run dev
 

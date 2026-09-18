@@ -3,7 +3,7 @@ Description: AutoColor
 Version: 1.0.0
 Author: Michal MaXyM Bartak
 Links:
-  GitHub https://github.com/michal-bartak/AutoColor
+  GitHub https://github.com/michal-bartak/Reaper-AutoColor
 About:
   # AutoColor
 
@@ -17,7 +17,7 @@ About:
   The configuration window needs ReaImGui 0.10+. Every other action, including
   Apply and Clear, works without it.
 
-  MIT licensed. Source: <https://github.com/michal-bartak/AutoColor>
+  MIT licensed. Source: <https://github.com/michal-bartak/Reaper-AutoColor>
 Metapackage: true
 Changelog:
   Initial ReaPack release

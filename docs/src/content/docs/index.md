@@ -1,5 +1,5 @@
 ---
-title: AutoColor
+title: Reaper AutoColor
 description: Colour REAPER tracks, items, regions and markers from their names
 ---
 
@@ -34,8 +34,8 @@ moment it is named, and the items on it go with it.
 
 :::tip[SWS Auto Color]
 SWS matches case-insensitive substrings only, and has no item support. If you are coming from it,
-[Matching names](/AutoColor/usage/matching/) covers what the three modes do differently. Do not
-run both at once — see [Troubleshooting](/AutoColor/troubleshooting/).
+[Matching names](/Reaper-AutoColor/usage/matching/) covers what the three modes do differently. Do not
+run both at once — see [Troubleshooting](/Reaper-AutoColor/troubleshooting/).
 :::
 
 ## How a colour is decided
@@ -43,20 +43,20 @@ run both at once — see [Troubleshooting](/AutoColor/troubleshooting/).
 1. The object's name is tested against the rules on **its own tab**, top to bottom.
 1. The **first** rule that matches wins; its colour is the object's colour.
 1. If that rule has a second colour, the object's shade comes from where it sits in its
-   [gradient group](/AutoColor/usage/colours/#gradients).
+   [gradient group](/Reaper-AutoColor/usage/colours/#gradients).
 1. An item that no item rule claims can still take its **track's** colour, if the track's rule says
-   to [cascade](/AutoColor/usage/items-and-folders/).
+   to [cascade](/Reaper-AutoColor/usage/items-and-folders/).
 1. A track that no rule claims can still inherit from its **folder parent**, depending on the
-   [folder setting](/AutoColor/usage/items-and-folders/#folder-colours).
+   [folder setting](/Reaper-AutoColor/usage/items-and-folders/#folder-colours).
 1. If nothing claims it, the object is left alone — unless you asked for unmatched objects of that
-   kind to be [reset](/AutoColor/usage/clearing/#reset-unmatched-objects).
+   kind to be [reset](/Reaper-AutoColor/usage/clearing/#reset-unmatched-objects).
 
 Nothing is written to the project until you **Apply** or the background loop runs.
 
 ## Where to go next
 
-- [Installation](/AutoColor/installation/) — install through ReaPack, or copy the folder in by hand.
-- [The configuration window](/AutoColor/usage/) — the tabs, the rule row, the action bar.
-- [Matching names](/AutoColor/usage/matching/) — modes, supported regex, filters.
-- [Auto-apply](/AutoColor/usage/auto-apply/) — the background loop and what it refuses to touch.
-- [Troubleshooting](/AutoColor/troubleshooting/) — when the colour is not what you expected.
+- [Installation](/Reaper-AutoColor/installation/) — install through ReaPack, or copy the folder in by hand.
+- [The configuration window](/Reaper-AutoColor/usage/) — the tabs, the rule row, the action bar.
+- [Matching names](/Reaper-AutoColor/usage/matching/) — modes, supported regex, filters.
+- [Auto-apply](/Reaper-AutoColor/usage/auto-apply/) — the background loop and what it refuses to touch.
+- [Troubleshooting](/Reaper-AutoColor/troubleshooting/) — when the colour is not what you expected.
