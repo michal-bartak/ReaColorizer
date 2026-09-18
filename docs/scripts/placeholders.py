@@ -39,7 +39,7 @@ MARKER_VAL = "placeholder"
 # path (under src/assets), size, and what the real screenshot needs to show
 SHOTS = [
     ("installation/action-list.png", (1100, 620),
-     "REAPER's Action List with the MB_NameColorizer_* scripts loaded"),
+     "REAPER's Action List with the MXM_NameColorizer_* scripts loaded"),
     ("installation/toolbar-button.png", (760, 240),
      "The toolbar button for AutoToggle, lit while the loop runs"),
 
@@ -83,7 +83,7 @@ SHOTS = [
     ("troubleshooting/sws-warning.png", (1100, 240),
      "The banner shown when SWS Auto Color is enabled at the same time"),
     ("troubleshooting/why-this-colour.png", (1000, 640),
-     "MB_NameColorizer_WhyThisColour.lua output in the ReaScript console"),
+     "MXM_NameColorizer_WhyThisColour.lua output in the ReaScript console"),
 ]
 
 BG = (232, 232, 234)

@@ -10,7 +10,7 @@
 set -uo pipefail
 
 TESTS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export NC="$(dirname "$TESTS")/NameColorizer"
+export NC="$(dirname "$TESTS")/Reaper/Scripts/MXM_NameColorizer"
 export SP="$TESTS/.tmp"
 
 # Find the mocks regardless of where this was invoked from. Without it the

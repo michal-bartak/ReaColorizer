@@ -258,7 +258,7 @@ local function auto_button(FS, w)
       ImGui.SetTooltip(ctx, app.auto_command_id()
         and 'Background auto-colouring is off.\nClick to start it.'
         or  'Background auto-colouring is off.\n\nRun the action\n' ..
-            'MB_NameColorizer_AutoToggle.lua once; after that\n' ..
+            'MXM_NameColorizer_AutoToggle.lua once; after that\n' ..
             'this button can start and stop it.')
     else
       ImGui.SetTooltip(ctx, 'Background auto-colouring is running.\n' ..
