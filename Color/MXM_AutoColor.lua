@@ -17,6 +17,9 @@ About:
   The configuration window needs ReaImGui 0.10+. Every other action, including
   Apply and Clear, works without it.
 
+  Your rules live in `MXM_AutoColor/config.json` under REAPER's resource
+  path, outside Scripts/, so updating or reinstalling never touches them.
+
   MIT licensed. Source: <https://github.com/michal-bartak/Reaper-AutoColor>
 Metapackage: true
 Changelog:
