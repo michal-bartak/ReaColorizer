@@ -3,7 +3,7 @@
 package.path = os.getenv('SP') .. '/?.lua;' .. package.path
 local mock = require 'mockreaper'
 local NC, TMP = os.getenv('NC'), os.getenv('SP') .. '/proj3'
-os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/AutoColor"')
+os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/MXM_AutoColor"')
 
 local pass, fail, fails = 0, 0, {}
 local function check(ok, label, detail)

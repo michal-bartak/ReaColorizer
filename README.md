@@ -263,7 +263,7 @@ the track rule instead.
 ## Configuration file
 
 ```
-<REAPER resource path>/AutoColor/config.json
+<REAPER resource path>/MXM_AutoColor/config.json
 ```
 
 One global rule set shared by every project, deliberately outside `Scripts/` so

@@ -131,7 +131,7 @@ Run `MXM_AutoColor_GUI.lua`. On the very first run it writes a **starter rule se
 has something to show, and tells you where:
 
 ```
-<REAPER resource path>/AutoColor/config.json
+<REAPER resource path>/MXM_AutoColor/config.json
 ```
 
 That file is one global rule set shared by every project, and it sits **outside** `Scripts/` on

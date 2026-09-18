@@ -290,7 +290,7 @@ existing ones. That is orthogonal to grouping and not done here.
 
 ## Config
 
-One global JSON file at `<resource path>/AutoColor/config.json`, kept
+One global JSON file at `<resource path>/MXM_AutoColor/config.json`, kept
 **outside** `Scripts/` so reinstalling the scripts cannot clobber it. JSON
 because patterns legitimately contain `| , = : [ #` and backslashes, so any
 delimiter scheme needs escaping anyway. Encoded on a single line with sorted

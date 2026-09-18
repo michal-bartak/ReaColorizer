@@ -1,7 +1,7 @@
 package.path = os.getenv('SP') .. '/?.lua;' .. package.path
 local mock = require 'mockreaper'
 local NC, TMP = os.getenv('NC'), os.getenv('SP') .. '/proj2'
-os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/AutoColor"')
+os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/MXM_AutoColor"')
 
 local pass, fail, fails = 0, 0, {}
 local function check(ok, label, detail)
@@ -169,7 +169,7 @@ end
 -- recolouring".
 do
   local TMP2 = os.getenv('SP') .. '/coldint'
-  os.execute('rm -rf "' .. TMP2 .. '" && mkdir -p "' .. TMP2 .. '/AutoColor"')
+  os.execute('rm -rf "' .. TMP2 .. '" && mkdir -p "' .. TMP2 .. '/MXM_AutoColor"')
   -- time creeps on every reading, so the cold budget really does expire
   local P2 = mock.install{ resource = TMP2, script = NC .. '/x.lua', tick_cost = 0.002 }
   P2.now = 1000
@@ -239,7 +239,7 @@ end
 -- no cheap signal can see.
 do
   local TMP3 = os.getenv('SP') .. '/gate'
-  os.execute('rm -rf "' .. TMP3 .. '" && mkdir -p "' .. TMP3 .. '/AutoColor"')
+  os.execute('rm -rf "' .. TMP3 .. '" && mkdir -p "' .. TMP3 .. '/MXM_AutoColor"')
   local P3 = mock.install{ resource = TMP3, script = NC .. '/x.lua' }
   for _, m in ipairs({ 'targets', 'apply', 'autoloop', 'config', 'matcher' }) do
     package.loaded[m] = nil
@@ -352,7 +352,7 @@ end
 -- tick -- and the mock, which advanced time on every reading, hid it.
 do
   local TMP4 = os.getenv('SP') .. '/chunk'
-  os.execute('rm -rf "' .. TMP4 .. '" && mkdir -p "' .. TMP4 .. '/AutoColor"')
+  os.execute('rm -rf "' .. TMP4 .. '" && mkdir -p "' .. TMP4 .. '/MXM_AutoColor"')
   local P4 = mock.install{ resource = TMP4, script = NC .. '/x.lua',
                            write_cost = 0.002 }
   for _, m in ipairs({ 'targets', 'apply', 'autoloop', 'config', 'matcher' }) do
@@ -418,7 +418,7 @@ end
 -- that its colour had been picked by hand, and leaked an entry per move.
 do
   local TMP5 = os.getenv('SP') .. '/rgnid'
-  os.execute('rm -rf "' .. TMP5 .. '" && mkdir -p "' .. TMP5 .. '/AutoColor"')
+  os.execute('rm -rf "' .. TMP5 .. '" && mkdir -p "' .. TMP5 .. '/MXM_AutoColor"')
   local P5 = mock.install{ resource = TMP5, script = NC .. '/x.lua' }
   for _, m in ipairs({ 'targets', 'apply', 'autoloop', 'config', 'matcher' }) do
     package.loaded[m] = nil

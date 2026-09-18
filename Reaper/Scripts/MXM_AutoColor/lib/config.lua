@@ -5,7 +5,7 @@
   Scripts/ so that updating or reinstalling the scripts can never clobber a
   user's rules:
 
-      <resource path>/AutoColor/config.json
+      <resource path>/MXM_AutoColor/config.json
 
   Rules are global (one set for every project), which is what was asked for.
 
@@ -29,7 +29,7 @@ end
 ---------------------------------------------------------------------- paths
 function M.dir()
   if in_reaper() then
-    return reaper.GetResourcePath() .. '/AutoColor'
+    return reaper.GetResourcePath() .. '/MXM_AutoColor'
   end
   return os.getenv('NC_TEST_DIR') or '.'
 end

@@ -3,7 +3,7 @@ package.path = os.getenv('SP') .. '/?.lua;' .. package.path
 local mock     = require 'mockreaper'
 local mockimgui = require 'mockimgui'
 local NC, TMP = os.getenv('NC'), os.getenv('SP') .. '/proj4'
-os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/AutoColor"')
+os.execute('rm -rf "' .. TMP .. '" && mkdir -p "' .. TMP .. '/MXM_AutoColor"')
 
 local function pathlib_read(rel)
   local f = assert(io.open(NC .. '/' .. rel)); local t = f:read('a'); f:close(); return t

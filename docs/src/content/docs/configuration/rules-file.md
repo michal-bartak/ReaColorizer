@@ -6,14 +6,14 @@ description: Where the rule set lives, what is in it, and how it is protected
 One global rule set is shared by every project:
 
 ```
-<REAPER resource path>/AutoColor/config.json
+<REAPER resource path>/MXM_AutoColor/config.json
 ```
 
 | OS | Path |
 |----|------|
-| macOS | `~/Library/Application Support/REAPER/AutoColor/config.json` |
+| macOS | `~/Library/Application Support/REAPER/MXM_AutoColor/config.json` |
 | Windows | `%AppData%\REAPER\AutoColor\config.json` |
-| Linux | `~/.config/REAPER/AutoColor/config.json` |
+| Linux | `~/.config/REAPER/MXM_AutoColor/config.json` |
 
 *Options → Show REAPER resource path in explorer/finder* opens the parent directory. The path is
 also printed in the **Rules file** section of [Options](/Reaper-AutoColor/configuration/).
