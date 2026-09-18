@@ -118,9 +118,16 @@ pick its icon from REAPER's icon browser. The file names mirror the script names
 `MXM_AutoColor_AutoToggle.lua`.
 
 :::note[What the states look like]
-Hovering rotates the star's colours one step around the ring; pressing rotates them two. REAPER's
-own icons instead lighten on hover, which on a six-colour mark reads as a white film laid over it
-rather than as a highlight.
+A REAPER toolbar icon is three cells, and the third is what REAPER draws while a **toggle action is
+armed** — not a click flash. So the AutoToggle button says whether the loop is running: grey while
+it is off, that grey lifted while you hover, and the full six colours once it is working. The mark
+only pays out its colour while the tool is doing something.
+
+The window button is not a toggle, so it keeps its colours throughout and simply brightens under
+the pointer.
+
+The greys are REAPER's own — `#818989`, and `#939A9A` on hover — measured from the 528 icons it
+ships, so an idle AutoColor button sits at exactly the same weight as every other idle button.
 
 REAPER also brightens the **button plate behind** the icon on hover, and turns it the theme's
 accent colour while a toggle action is armed. That comes from the theme, not from the icon, and

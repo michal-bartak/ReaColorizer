@@ -26,16 +26,24 @@ const MASTER = join(REPO, 'icon', 'icon.svg');
 // mark stay the plain star, which is the project's identity rather than one of its two actions.
 const MASTER_GUI = join(REPO, 'icon', 'icon-gui.svg');
 
-// REAPER toolbar icons are a 3-state horizontal strip of square cells: normal, hover, pressed.
-// Verified by measuring Data/toolbar_icons: 527 of the 529 shipped icons are exactly 90x30. Their
-// cell 2 is cell 1 at about +15% lightness and cell 3 is recoloured to the theme accent -- both
-// wrong for this mark. Lightening six saturated hues at once reads as a white film laid over the
-// icon rather than as a highlight, and the accent recolour would throw away the one thing the mark
-// is about.
+// REAPER toolbar icons are a 3-state horizontal strip of square cells. Measuring all 528 shipped
+// strips in Data/toolbar_icons tells you what the cells mean, because their colours are consistent:
 //
-// So the states advance the colours around the ring instead: hover rotates every arm one step
-// clockwise, pressed two. Same six hues, same luminance, and the icon appears to turn.
-const STATES = [0, 1, 2];
+//   cell 1  #818989 (53% of opaque pixels)  normal
+//   cell 2  #939A9A (50%)                   the same art, ~14% lighter -- hover
+//   cell 3  #1ABC98 (50%)                   the theme accent -- drawn while a toggle is ARMED
+//
+// So cell 3 is not a momentary click flash; it is how REAPER shows that a toggle action is on.
+// That is what lets the AutoToggle button say whether the background loop is running:
+//
+//   off      the star greyed to REAPER's own #818989, so it reads as inactive next to every
+//            other idle button on the toolbar
+//   hover    that grey lifted 14%, exactly as REAPER lifts its own
+//   on       the full six colours -- the mark only pays out its colour while it is working
+//
+// The window button is not a toggle, so it keeps its colours throughout and merely brightens.
+const GREY = '#818989';
+const HOVER_LIFT = 18; // #818989 -> #939A9A: REAPER's step is additive, not a ratio
 
 // Hi-DPI is a subdirectory with the SAME filename, not a suffix: Data/toolbar_icons/150/x.png.
 // Cell size 30 is the 1x; REAPER ships 45 (150) and 60 (200).
@@ -56,27 +64,41 @@ const TOOLBAR_MARGIN = 3.5 / 30;
 // colliding with the 529 icons REAPER ships in that same folder.
 const TOOLBAR_DIR = join(REPO, 'Reaper', 'Data', 'toolbar_icons');
 
+/** Map every stroke and fill colour in the SVG through `fn`. */
+function recolour(svg, fn) {
+  return svg.replace(
+    /(stroke|fill)="(#[0-9A-Fa-f]{6})"/g,
+    (_, attr, hex) => `${attr}="${fn(hex)}"`,
+  );
+}
+
+function lighten(hex, amount) {
+  const n = parseInt(hex.slice(1), 16);
+  const ch = [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+    .map((v) => Math.min(255, v + amount));
+  return '#' + ch.map((v) => v.toString(16).padStart(2, '0')).join('');
+}
+
+// A toggle button: grey while off, grey lifted on hover, full colour once it is running.
+const TOGGLE_STATES = [
+  (svg) => recolour(svg, () => GREY),
+  (svg) => recolour(svg, () => lighten(GREY, HOVER_LIFT)),
+  (svg) => svg,
+];
+
+// An ordinary button: always itself, brightening under the pointer and again while held.
+const PLAIN_STATES = [
+  (svg) => svg,
+  (svg) => recolour(svg, (hex) => lighten(hex, HOVER_LIFT)),
+  (svg) => recolour(svg, (hex) => lighten(hex, HOVER_LIFT * 2)),
+];
+
 // One entry per action that has a button. The file name mirrors the script it belongs to, so the
 // two line up in REAPER's toolbar editor, where you pick an icon by name next to an action.
 const TOOLBAR_ICONS = [
-  { master: MASTER, name: 'mxm_toolbar_autocolor.png' },          // MXM_AutoColor_AutoToggle.lua
-  { master: MASTER_GUI, name: 'mxm_toolbar_autocolor_gui.png' },  // MXM_AutoColor_GUI.lua
+  { master: MASTER, name: 'mxm_toolbar_autocolor.png', states: TOGGLE_STATES },      // AutoToggle
+  { master: MASTER_GUI, name: 'mxm_toolbar_autocolor_gui.png', states: PLAIN_STATES }, // GUI
 ];
-
-/**
- * Advance every arm's colour `steps` places around the ring, so arm N takes the colour of the arm
- * `steps` further clockwise. The master lists its arms in clockwise order starting at the top, so
- * rotating the stroke colours in document order IS rotating them around the star.
- */
-function rotate(svg, steps) {
-  if (steps === 0) return svg;
-  const colours = [...svg.matchAll(/stroke="(#[0-9A-Fa-f]{6})"/g)].map((m) => m[1]);
-  let i = 0;
-  return svg.replace(
-    /stroke="#[0-9A-Fa-f]{6}"/g,
-    () => `stroke="${colours[(i++ + steps) % colours.length]}"`,
-  );
-}
 
 async function write(path, buffer) {
   await mkdir(dirname(path), { recursive: true });
@@ -108,14 +130,14 @@ await write(
 );
 
 // 3. The REAPER toolbar strips: every icon, at every resolution.
-for (const { master: source, name } of TOOLBAR_ICONS) {
+for (const { master: source, name, states } of TOOLBAR_ICONS) {
   const art = await readFile(source, 'utf8');
   for (const { dir, cell } of TOOLBAR_CELLS) {
     const margin = Math.round(cell * TOOLBAR_MARGIN);
     const box = cell - margin * 2;
     const cells = await Promise.all(
-      STATES.map((steps) =>
-        sharp(Buffer.from(rotate(art, steps)))
+      states.map((state) =>
+        sharp(Buffer.from(state(art)))
           .resize(box, box)
           .extend({
             top: margin,
