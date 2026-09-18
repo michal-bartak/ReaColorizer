@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<index version="1" name="AutoColor" commit="bc8ced1c42a27468a87c41fe0036f84195171ed6">
+<index version="1" name="AutoColor" commit="5f8db36a8b78a5220a35107ea898b7fd44766754">
   <category name="Color">
     <reapack name="MXM_AutoColor.lua" type="script" desc="AutoColor">
       <metadata>
@@ -11,43 +11,43 @@
 {\pard \ql \f0 \fs24 \sa180 \li0 \fi0 Colour tracks, items, regions and markers from their {\b names}, using plain substring, glob, or {\b real regular expressions}.\par}
 {\pard \ql \f0 \fs24 \sa180 \li0 \fi0 One ordered rule list per object kind -- Tracks, Items, Regions, Markers -- and within a kind the first rule that matches wins, so precedence works like firewall rules. Reordering track rules can never change which region wins.\par}
 {\pard \ql \f0 \fs24 \sa180 \li0 \fi0 The configuration window needs ReaImGui 0.10+. Every other action, including Apply and Clear, works without it.\par}
-{\pard \ql \f0 \fs24 \sa180 \li0 \fi0 MIT licensed. Source: {\field{\*\fldinst{HYPERLINK "https://github.com/michal-bartak/AutoColor"}}{\fldrslt{\ul
-https://github.com/michal-bartak/AutoColor
+{\pard \ql \f0 \fs24 \sa180 \li0 \fi0 MIT licensed. Source: {\field{\*\fldinst{HYPERLINK "https://github.com/michal-bartak/Reaper-AutoColor"}}{\fldrslt{\ul
+https://github.com/michal-bartak/Reaper-AutoColor
 }}}
 \par}
 }
 ]]></description>
-        <link rel="website" href="https://github.com/michal-bartak/AutoColor">GitHub</link>
+        <link rel="website" href="https://github.com/michal-bartak/Reaper-AutoColor">GitHub</link>
       </metadata>
       <version name="1.0.0" author="Michal MaXyM Bartak" time="2026-09-18T12:49:41Z">
         <changelog><![CDATA[Initial ReaPack release]]></changelog>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ApplyAll.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplyAll.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ApplySelection.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplySelection.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_AutoToggle.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_AutoToggle.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ClearColors.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ClearColors.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_Dump.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_Dump.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_GUI.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_GUI.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_RunTests.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_RunTests.lua</source>
-        <source main="main" file="MXM_AutoColor/MXM_AutoColor_WhyThisColour.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_WhyThisColour.lua</source>
-        <source file="MXM_AutoColor/lib/apply.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/apply.lua</source>
-        <source file="MXM_AutoColor/lib/autoloop.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/autoloop.lua</source>
-        <source file="MXM_AutoColor/lib/colors.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/colors.lua</source>
-        <source file="MXM_AutoColor/lib/config.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/config.lua</source>
-        <source file="MXM_AutoColor/lib/entry.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/entry.lua</source>
-        <source file="MXM_AutoColor/lib/json.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/json.lua</source>
-        <source file="MXM_AutoColor/lib/matcher.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/matcher.lua</source>
-        <source file="MXM_AutoColor/lib/predicates.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/predicates.lua</source>
-        <source file="MXM_AutoColor/lib/regex.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/regex.lua</source>
-        <source file="MXM_AutoColor/lib/rules.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/rules.lua</source>
-        <source file="MXM_AutoColor/lib/targets.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/targets.lua</source>
-        <source file="MXM_AutoColor/lib/gui/app.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/gui/app.lua</source>
-        <source file="MXM_AutoColor/lib/gui/preview.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/gui/preview.lua</source>
-        <source file="MXM_AutoColor/lib/gui/rule_table.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/gui/rule_table.lua</source>
-        <source file="MXM_AutoColor/lib/gui/theme.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/gui/theme.lua</source>
-        <source file="MXM_AutoColor/lib/gui/window.lua">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Scripts/MXM_AutoColor/lib/gui/window.lua</source>
-        <source type="data" file="toolbar_icons/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Data/toolbar_icons/mxm_toolbar_autocolor.png</source>
-        <source type="data" file="toolbar_icons/150/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Data/toolbar_icons/150/mxm_toolbar_autocolor.png</source>
-        <source type="data" file="toolbar_icons/200/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/AutoColor/raw/bc8ced1c42a27468a87c41fe0036f84195171ed6/Reaper/Data/toolbar_icons/200/mxm_toolbar_autocolor.png</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ApplyAll.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplyAll.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ApplySelection.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ApplySelection.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_AutoToggle.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_AutoToggle.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_ClearColors.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_ClearColors.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_Dump.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_Dump.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_GUI.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_GUI.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_RunTests.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_RunTests.lua</source>
+        <source main="main" file="MXM_AutoColor/MXM_AutoColor_WhyThisColour.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/MXM_AutoColor_WhyThisColour.lua</source>
+        <source file="MXM_AutoColor/lib/apply.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/apply.lua</source>
+        <source file="MXM_AutoColor/lib/autoloop.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/autoloop.lua</source>
+        <source file="MXM_AutoColor/lib/colors.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/colors.lua</source>
+        <source file="MXM_AutoColor/lib/config.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/config.lua</source>
+        <source file="MXM_AutoColor/lib/entry.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/entry.lua</source>
+        <source file="MXM_AutoColor/lib/json.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/json.lua</source>
+        <source file="MXM_AutoColor/lib/matcher.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/matcher.lua</source>
+        <source file="MXM_AutoColor/lib/predicates.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/predicates.lua</source>
+        <source file="MXM_AutoColor/lib/regex.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/regex.lua</source>
+        <source file="MXM_AutoColor/lib/rules.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/rules.lua</source>
+        <source file="MXM_AutoColor/lib/targets.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/targets.lua</source>
+        <source file="MXM_AutoColor/lib/gui/app.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/gui/app.lua</source>
+        <source file="MXM_AutoColor/lib/gui/preview.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/gui/preview.lua</source>
+        <source file="MXM_AutoColor/lib/gui/rule_table.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/gui/rule_table.lua</source>
+        <source file="MXM_AutoColor/lib/gui/theme.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/gui/theme.lua</source>
+        <source file="MXM_AutoColor/lib/gui/window.lua">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Scripts/MXM_AutoColor/lib/gui/window.lua</source>
+        <source type="data" file="toolbar_icons/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Data/toolbar_icons/mxm_toolbar_autocolor.png</source>
+        <source type="data" file="toolbar_icons/150/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Data/toolbar_icons/150/mxm_toolbar_autocolor.png</source>
+        <source type="data" file="toolbar_icons/200/mxm_toolbar_autocolor.png">https://github.com/michal-bartak/Reaper-AutoColor/raw/5f8db36a8b78a5220a35107ea898b7fd44766754/Reaper/Data/toolbar_icons/200/mxm_toolbar_autocolor.png</source>
       </version>
     </reapack>
   </category>
